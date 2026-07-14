@@ -6,8 +6,7 @@ import { useCustomerAuth } from '../context/CustomerAuthContext';
 import API_URL from '../config';
 
 const navLinks = [
-    { label: 'HOME', path: '/' },
-    { label: 'BAGS', path: '/shop?superCategory=Bags' },
+    { label: 'HOME', path: '/' },    { label: 'BAGS', path: '/shop?superCategory=Bags' },
     { label: 'JEWELLERY', path: '/shop?superCategory=Jewellery' },
     { label: 'SHOP', path: '/shop' },
     { label: 'NEW ARRIVALS', path: '/new-arrivals' },

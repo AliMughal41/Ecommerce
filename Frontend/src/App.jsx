@@ -114,8 +114,9 @@ function App() {
     <AlertProvider>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<ShopPage wishlist={wishlist} setWishlist={setWishlist} />} />
         <Route path="/shop" element={<ShopPage wishlist={wishlist} setWishlist={setWishlist} />} />
+        <Route path="/home" element={<HomePage />} />
         <Route path="/collections" element={<CollectionsPage />} />
         <Route path="/new-arrivals" element={<NewArrivalsPage wishlist={wishlist} setWishlist={setWishlist} />} />
         <Route path="/brands" element={<BrandsPage />} />
