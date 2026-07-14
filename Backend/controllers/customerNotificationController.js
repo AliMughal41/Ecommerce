@@ -51,23 +51,32 @@ const markAllAsRead = async (req, res) => {
 const sendProductNotification = async (product) => {
   try {
     const customers = await Customer.find({}).select('email frozen');
+    console.log(`[NOTIFY] Total customers found: ${customers.length}`);
     const frozenEmails = new Set(
       customers.filter(c => c.frozen === true).map(c => c.email?.toLowerCase())
     );
+    console.log(`[NOTIFY] Frozen customers: ${frozenEmails.size}`);
+
     const customerEmails = customers
       .filter(c => c.frozen !== true)
       .map(c => c.email);
+    console.log(`[NOTIFY] Active customer emails: ${customerEmails.length}`);
 
     const subscribers = await Subscriber.find({}).select('email');
+    console.log(`[NOTIFY] Total subscribers: ${subscribers.length}`);
     const subscriberEmails = subscribers
       .map(s => s.email)
       .filter(e => e && !frozenEmails.has(e.toLowerCase()));
 
     const allEmails = [...customerEmails, ...subscriberEmails];
     const uniqueEmails = [...new Set(allEmails.filter(Boolean))];
-    if (uniqueEmails.length === 0) return;
+    console.log(`[NOTIFY] Unique emails for notification: ${uniqueEmails.length}`);
+    if (uniqueEmails.length === 0) {
+      console.log('[NOTIFY] No recipients found — skipping notification');
+      return;
+    }
 
-    await CustomerNotification.create({
+    const notif = await CustomerNotification.create({
       title: `New Product: ${product.name}`,
       message: `Check out our new product "${product.name}" now available for Rs. ${product.price.toLocaleString()}!`,
       type: 'product',
@@ -76,8 +85,9 @@ const sendProductNotification = async (product) => {
       productPrice: product.price,
       recipients: uniqueEmails,
     });
+    console.log(`[NOTIFY] CustomerNotification created: ${notif._id} for ${uniqueEmails.length} recipients`);
   } catch (error) {
-    console.error('Failed to send product notification:', error);
+    console.error('[NOTIFY] Failed to send product notification:', error.message, error.stack);
   }
 };
 

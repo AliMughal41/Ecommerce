@@ -50,8 +50,14 @@ exports.newProduct = async (req, res) => {
 
     const product = await Product.create(productData);
 
-    sendProductNotification(product).catch(err => console.error('Product notification error:', err.message));
-    sendCustomerProductNotification(product).catch(err => console.error('Customer notification error:', err.message));
+    // Fire-and-forget notifications with logging
+    console.log(`[NOTIFY] Product created: ${product.name} (ID: ${product._id})`);
+    sendProductNotification(product)
+      .then(() => console.log('[NOTIFY] Email notification sent to subscribers'))
+      .catch(err => console.error('[NOTIFY] Email notification FAILED:', err.message));
+    sendCustomerProductNotification(product)
+      .then(() => console.log('[NOTIFY] In-app notification created for customers'))
+      .catch(err => console.error('[NOTIFY] In-app notification FAILED:', err.message));
 
     res.status(201).json({ success: true, product });
   } catch (error) {
