@@ -267,7 +267,7 @@ export default function Navbar() {
                     .notif-item:hover { background: rgba(201,168,76,0.06) !important; }
                 `}</style>
 
-                <div className="container-fluid px-3 d-flex align-items-center justify-content-between">
+                <div className="container-fluid px-3 d-flex align-items-center justify-content-between" style={{ flexWrap: 'nowrap', overflow: 'hidden' }}>
                     {/* Logo */}
                     <div
                         className="d-flex align-items-center gap-2 gap-md-3"
@@ -350,8 +350,8 @@ export default function Navbar() {
                         </div>
                     </div>
 
-                    {/* Nav Links - Bigger size */}
-                    <ul className="nav gap-4 d-none d-lg-flex">
+                    {/* Nav Links */}
+                    <ul className="nav d-none d-lg-flex" style={{ gap: '6px', flexShrink: 1, overflow: 'hidden', margin: 0, padding: 0, listStyle: 'none' }}>
                         {links.map((link) => {
                             const isActive = location.pathname === link.path && link.path !== '/';
                             const isHome = link.path === '/' && location.pathname === '/';
@@ -361,15 +361,16 @@ export default function Navbar() {
                                     <span
                                         className={`nav-link fw-semibold d-flex align-items-center gap-1 ${active ? 'text-warning' : 'text-secondary'}`}
                                         style={{
-                                            letterSpacing: '2px',
+                                            letterSpacing: '1px',
                                             paddingBottom: '2px',
                                             cursor: 'pointer',
                                             position: 'relative',
                                             transition: 'color 0.3s',
-                                            fontSize: '15px',
+                                            fontSize: '13px',
                                             fontFamily: "'Inter', sans-serif",
                                             fontWeight: 600,
-                                            padding: '8px 4px'
+                                            padding: '8px 6px',
+                                            whiteSpace: 'nowrap'
                                         }}
                                         onClick={() => navigate(link.path)}
                                         onMouseEnter={e => { 
