@@ -1,5 +1,8 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
+const Customer = require('../models/Customer');
+const CustomerNotification = require('../models/CustomerNotification');
+const Notification = require('../models/Notification');
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
@@ -298,6 +301,35 @@ exports.createOrder = async (req, res) => {
       sendCustomerOrderNotification(order),
     ]).catch(emailError => console.error('Order email notification error:', emailError.message));
 
+    // Create in-app notifications (always works, no SMTP needed)
+    // 1. Admin in-app notification (new order alert)
+    try {
+      await Notification.create({
+        type: 'new_order',
+        name: order.customer.fullName,
+        email: order.customer.email || 'guest',
+        subject: `New Order: ${order.orderNumber}`,
+        message: `New order received from ${order.customer.fullName}. Total: Rs. ${order.total.toLocaleString()}. Items: ${order.items.length}. Payment: ${order.customer.paymentMethod === 'cod' ? 'COD' : 'WhatsApp'}.`,
+      });
+    } catch (notifErr) {
+      console.error('Admin notification error:', notifErr.message);
+    }
+
+    // 2. Customer in-app notification (if logged in)
+    if (order.customerRef && order.customer.email) {
+      try {
+        const customerEmail = order.customer.email.toLowerCase();
+        await CustomerNotification.create({
+          title: `Order Placed: ${order.orderNumber}`,
+          message: `Your order has been placed successfully! Total: Rs. ${order.total.toLocaleString()}. We will contact you shortly to confirm.`,
+          type: 'order',
+          recipients: [customerEmail],
+        });
+      } catch (notifErr) {
+        console.error('Customer notification error:', notifErr.message);
+      }
+    }
+
     res.status(201).json({ success: true, order });
   } catch (error) {
     console.error('Create order error:', error.message);
@@ -369,14 +401,55 @@ exports.updateOrderStatus = async (req, res) => {
     }
 
     if (oldStatus !== status) {
+      // Send email in background (non-blocking)
+      const statusLabels = { Processing: 'Confirmed', Shipped: 'Shipped', Delivered: 'Delivered', Cancelled: 'Cancelled' };
+      const statusMessages = {
+        Processing: `Your order ${order.orderNumber} has been confirmed! Our team is preparing it for dispatch.`,
+        Shipped: `Great news! Your order ${order.orderNumber} has been shipped and is on its way.`,
+        Delivered: `Your order ${order.orderNumber} has been delivered successfully! Thank you for shopping with Velnora.`,
+        Cancelled: `Your order ${order.orderNumber} has been cancelled. If you have any questions, please contact us.`,
+      };
+
       try {
-        if (status === 'Processing') {
+        if (status === 'Processing' || status === 'Delivered') {
+          await sendCustomerStatusUpdateNotification(order, status, status === 'Delivered' ? order.trackingId : '');
+        }
+        // Also send for Shipped and Cancelled
+        if (status === 'Shipped' || status === 'Cancelled') {
           await sendCustomerStatusUpdateNotification(order, status);
-        } else if (status === 'Delivered') {
-          await sendCustomerStatusUpdateNotification(order, status, order.trackingId);
         }
       } catch (emailError) {
         console.error('Order status email error:', emailError.message);
+      }
+
+      // 3. Customer in-app notification for status update
+      if (order.customer.email) {
+        try {
+          const customerEmail = order.customer.email.toLowerCase();
+          const title = `Order ${statusLabels[status] || status}: ${order.orderNumber}`;
+          const message = statusMessages[status] || `Your order ${order.orderNumber} status has been updated to ${status}.`;
+          await CustomerNotification.create({
+            title,
+            message,
+            type: 'order',
+            recipients: [customerEmail],
+          });
+        } catch (notifErr) {
+          console.error('Customer status notification error:', notifErr.message);
+        }
+      }
+
+      // 4. Admin in-app notification for status change
+      try {
+        await Notification.create({
+          type: 'order_update',
+          name: order.customer.fullName,
+          email: order.customer.email || 'guest',
+          subject: `Order ${statusLabels[status] || status}: ${order.orderNumber}`,
+          message: `Order ${order.orderNumber} status updated from ${oldStatus} to ${status}. Customer: ${order.customer.fullName}.`,
+        });
+      } catch (notifErr) {
+        console.error('Admin status notification error:', notifErr.message);
       }
     }
 
