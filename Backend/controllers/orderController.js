@@ -10,6 +10,9 @@ const transporter = nodemailer.createTransport({
     user: process.env.SMTP_EMAIL,
     pass: process.env.SMTP_PASSWORD,
   },
+  connectionTimeout: 5000,
+  greetingTimeout: 5000,
+  socketTimeout: 5000,
 });
 
 // ─── XSS Protection: Escape HTML entities ────────────────────────────────────
@@ -289,14 +292,11 @@ exports.createOrder = async (req, res) => {
       }
     }
 
-    try {
-      await Promise.all([
-        sendAdminOrderNotification(order),
-        sendCustomerOrderNotification(order),
-      ]);
-    } catch (emailError) {
-      console.error('Order email notification error:', emailError.message);
-    }
+    // Send emails in background (non-blocking)
+    Promise.all([
+      sendAdminOrderNotification(order),
+      sendCustomerOrderNotification(order),
+    ]).catch(emailError => console.error('Order email notification error:', emailError.message));
 
     res.status(201).json({ success: true, order });
   } catch (error) {
