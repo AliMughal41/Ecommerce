@@ -267,11 +267,11 @@ export default function Navbar() {
                     .notif-item:hover { background: rgba(201,168,76,0.06) !important; }
                 `}</style>
 
-                <div className="container-fluid px-3 d-flex align-items-center justify-content-between" style={{ flexWrap: 'nowrap', overflow: 'hidden' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'nowrap', padding: '0 12px', width: '100%', overflow: 'hidden' }}>
                     {/* Logo */}
                     <div
                         className="d-flex align-items-center gap-2 gap-md-3"
-                        style={{ cursor: 'pointer' }}
+                        style={{ cursor: 'pointer', flexShrink: 0 }}
                         onClick={() => navigate('/')}
                     >
                         <div
@@ -419,7 +419,7 @@ export default function Navbar() {
 
                     {/* Right Icons - Bigger with labels */}
                     {!isAdmin && (
-                        <div className="d-flex gap-2 gap-sm-4 align-items-center">
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexShrink: 0 }}>
                             <div 
                                 className="d-flex flex-column align-items-center gap-0"
                                 style={{ 
@@ -673,7 +673,7 @@ export default function Navbar() {
                     )}
 
                     {isAdmin && (
-                        <div className="d-flex gap-3 align-items-center">
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexShrink: 0 }}>
                             <div className="position-relative notifications-container d-flex flex-column align-items-center gap-0" style={{ cursor: 'pointer' }}>
                                 <Bell
                                     size={22}
