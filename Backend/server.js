@@ -136,7 +136,7 @@ const superCategoryRoutes = require('./routes/superCategoryRoutes');
 // ─── Use Routes ────────────────────────────────────────────────────────────
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/products', productRoutes);
-app.use('/api/orders', strictLimiter, orderRoutes);
+app.use('/api/orders', orderRoutes);
 app.use('/api/subscribers', strictLimiter, subscriberRoutes);
 app.use('/api/contact', strictLimiter, contactRoutes);
 app.use('/api/categories', categoryRoutes);
