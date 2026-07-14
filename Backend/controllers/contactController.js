@@ -1,4 +1,4 @@
-const getTransporter = require('../config/smtp');
+const nodemailer = require('nodemailer');
 const Notification = require('../models/Notification');
 
 const escapeHtml = (str) => {
@@ -33,7 +33,15 @@ exports.sendContactEmail = async (req, res) => {
         });
         await notification.save();
 
-        const transporter = await getTransporter();
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST || 'smtp.gmail.com',
+            port: 465,
+            secure: true,
+            auth: { user: process.env.SMTP_EMAIL, pass: process.env.SMTP_PASSWORD },
+            connectionTimeout: 10000,
+            socketTimeout: 10000,
+            tls: { rejectUnauthorized: false },
+        });
 
         const safeName = escapeHtml(name);
         const safeEmail = escapeHtml(email);

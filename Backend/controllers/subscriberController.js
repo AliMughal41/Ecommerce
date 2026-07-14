@@ -1,5 +1,5 @@
 const Subscriber = require('../models/Subscriber');
-const getTransporter = require('../config/smtp');
+const nodemailer = require('nodemailer');
 
 const escapeHtml = (str) => {
   if (!str) return '';
@@ -11,14 +11,21 @@ const websiteUrl = (process.env.FRONTEND_URL || 'https://shopvelnora.store').spl
 
 const sendEmail = async ({ to, subject, html }) => {
   if (!to) return;
-  const transporter = await getTransporter();
-  const mailOptions = {
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: { user: process.env.SMTP_EMAIL, pass: process.env.SMTP_PASSWORD },
+    connectionTimeout: 10000,
+    socketTimeout: 10000,
+    tls: { rejectUnauthorized: false },
+  });
+  await transporter.sendMail({
     from: `"Velnora" <${process.env.SMTP_EMAIL}>`,
     to,
     subject,
     html,
-  };
-  await transporter.sendMail(mailOptions);
+  });
 };
 
 exports.subscribe = async (req, res) => {
@@ -125,7 +132,15 @@ exports.sendProductNotification = async (product) => {
       .filter(e => e && !frozenEmails.has(e.toLowerCase()));
     if (emails.length === 0) return;
 
-    const transporter = await getTransporter();
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: { user: process.env.SMTP_EMAIL, pass: process.env.SMTP_PASSWORD },
+      connectionTimeout: 10000,
+      socketTimeout: 10000,
+      tls: { rejectUnauthorized: false },
+    });
     await transporter.sendMail({
       from: `"Velnora" <${process.env.SMTP_EMAIL}>`,
       bcc: emails.join(','),

@@ -1,6 +1,6 @@
 const Admin = require('../models/Admin');
+const nodemailer = require('nodemailer');
 const crypto = require('crypto');
-const getTransporter = require('../config/smtp');
 
 const MAX_ADMINS = 2;
 
@@ -40,7 +40,15 @@ const sendOtpEmail = async (email, otp, username) => {
       </div>
     `,
   };
-  const transporter = await getTransporter();
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: { user: process.env.SMTP_EMAIL, pass: process.env.SMTP_PASSWORD },
+    connectionTimeout: 10000,
+    socketTimeout: 10000,
+    tls: { rejectUnauthorized: false },
+  });
   await transporter.sendMail(mailOptions);
 };
 
