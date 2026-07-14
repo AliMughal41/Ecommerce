@@ -7,6 +7,7 @@ const escapeHtml = (str) => {
 };
 
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+const websiteUrl = (process.env.FRONTEND_URL || 'https://shopvelnora.store').split(',')[0].trim();
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -44,7 +45,6 @@ exports.subscribe = async (req, res) => {
 
     await Subscriber.create({ email: normalizedEmail });
 
-    const websiteUrl = process.env.FRONTEND_URL || 'https://shopvelnora.store';
     const html = `
       <div style="font-family: 'Segoe UI', sans-serif; background: #0a0a0a; color: #fff; padding: 28px;">
         <div style="max-width: 700px; margin: auto; background: #121212; border: 1px solid #2a1f10; border-radius: 12px; overflow: hidden;">
@@ -84,7 +84,6 @@ exports.sendProductNotification = async (product) => {
     const subscribers = await Subscriber.find({});
     if (!subscribers || subscribers.length === 0) return;
 
-    const websiteUrl = process.env.FRONTEND_URL || 'https://shopvelnora.store';
     const safeName = escapeHtml(product.name);
     const safeDesc = escapeHtml(product.description?.slice(0, 180) || '');
     const contactNumber = '923444133108';

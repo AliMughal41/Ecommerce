@@ -26,7 +26,7 @@ const escapeHtml = (str) => {
 
 const formatCurrency = (value) => `Rs. ${Number(value || 0).toLocaleString()}`;
 
-const websiteUrl = process.env.FRONTEND_URL || 'https://shopvelnora.store';
+const websiteUrl = (process.env.FRONTEND_URL || 'https://shopvelnora.store').split(',')[0].trim();
 const contactNumber = '923444133108';
 const contactDisplay = '0344-4133108';
 
