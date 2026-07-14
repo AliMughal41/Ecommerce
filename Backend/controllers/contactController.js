@@ -1,4 +1,4 @@
-const nodemailer = require('nodemailer');
+const getTransporter = require('../config/smtp');
 const Notification = require('../models/Notification');
 
 const escapeHtml = (str) => {
@@ -33,15 +33,7 @@ exports.sendContactEmail = async (req, res) => {
         });
         await notification.save();
 
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: Number(process.env.SMTP_PORT),
-            secure: false,
-            auth: {
-                user: process.env.SMTP_EMAIL,
-                pass: process.env.SMTP_PASSWORD,
-            },
-        });
+        const transporter = await getTransporter();
 
         const safeName = escapeHtml(name);
         const safeEmail = escapeHtml(email);

@@ -3,21 +3,7 @@ const Product = require('../models/Product');
 const Customer = require('../models/Customer');
 const CustomerNotification = require('../models/CustomerNotification');
 const Notification = require('../models/Notification');
-const nodemailer = require('nodemailer');
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.SMTP_EMAIL,
-    pass: process.env.SMTP_PASSWORD,
-  },
-  connectionTimeout: 15000,
-  greetingTimeout: 15000,
-  socketTimeout: 15000,
-  tls: { rejectUnauthorized: false },
-});
+const getTransporter = require('../config/smtp');
 
 // ─── XSS Protection: Escape HTML entities ────────────────────────────────────
 const escapeHtml = (str) => {
@@ -65,6 +51,7 @@ const sendOrderNotification = async ({ to, subject, html }) => {
     subject,
     html,
   };
+  const transporter = await getTransporter();
   await transporter.sendMail(mailOptions);
 };
 
