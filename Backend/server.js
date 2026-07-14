@@ -10,6 +10,9 @@ const { configureCloudinary } = require('./config/cloudinary');
 
 const app = express();
 
+// ─── Trust Render proxy (fixes X-Forwarded-For rate limit error) ────────────
+app.set('trust proxy', 1);
+
 // ─── Security Headers ───────────────────────────────────────────────────────
 app.use(helmet({
   contentSecurityPolicy: false,

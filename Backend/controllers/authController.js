@@ -24,9 +24,11 @@ const transporter = nodemailer.createTransport({
     user: process.env.SMTP_EMAIL,
     pass: process.env.SMTP_PASSWORD,
   },
-  connectionTimeout: 5000,
-  greetingTimeout: 5000,
-  socketTimeout: 5000,
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 10000,
+  tls: { rejectUnauthorized: false },
+  family: 4,
 });
 
 // ─── Send OTP Email ──────────────────────────────────────────────────────────
