@@ -6,7 +6,7 @@ import { useCustomerAuth } from '../context/CustomerAuthContext';
 import API_URL from '../config';
 
 const navLinks = [
-    { label: 'HOME', path: '/' },    { label: 'BAGS', path: '/shop?superCategory=Bags' },
+    { label: 'HOME', path: '/home' },    { label: 'BAGS', path: '/shop?superCategory=Bags' },
     { label: 'JEWELLERY', path: '/shop?superCategory=Jewellery' },
     { label: 'SHOP', path: '/shop' },
     { label: 'NEW ARRIVALS', path: '/new-arrivals' },
@@ -353,8 +353,8 @@ export default function Navbar() {
                     {/* Nav Links */}
                     <ul className="nav d-none d-lg-flex" style={{ gap: '6px', flexShrink: 1, overflow: 'hidden', margin: 0, padding: 0, listStyle: 'none' }}>
                         {links.map((link) => {
-                            const isActive = location.pathname === link.path && link.path !== '/';
-                            const isHome = link.path === '/' && location.pathname === '/';
+                            const isActive = location.pathname === link.path;
+                            const isHome = link.path === '/home' && location.pathname === '/home';
                             const active = isActive || isHome;
                             return (
                                 <li key={link.label} className="nav-item">
