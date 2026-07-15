@@ -292,7 +292,11 @@ export default function AdminProducts() {
                     </div>
 
                     {/* Stats Cards */}
-                    <div className="admin-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
+                    <style>{`
+                        .admin-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+                        @media (max-width: 768px) { .admin-stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; } }
+                    `}</style>
+                    <div className="admin-stats-grid">
                         {[
                             { icon: Package, label: 'Total Products', value: products.length, color: '#c9a84c' },
                            { 
