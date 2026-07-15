@@ -65,8 +65,19 @@ exports.sendProductNotification = async (product) => {
     const frozenCustomers = await Customer.find({ frozen: true }).select('email');
     const frozenEmails = new Set(frozenCustomers.map(c => c.email?.toLowerCase()));
 
+    const allCustomers = await Customer.find({}).select('email');
+    const customerEmails = allCustomers.map(c => c.email).filter(e => e && !frozenEmails.has(e.toLowerCase()));
+
     const subscribers = await Subscriber.find({});
-    if (!subscribers || subscribers.length === 0) return;
+    const subscriberEmails = subscribers.map(s => s.email).filter(e => e && !frozenEmails.has(e.toLowerCase()));
+
+    const uniqueEmails = [...new Set([...customerEmails, ...subscriberEmails].filter(Boolean))];
+    if (uniqueEmails.length === 0) {
+      console.log('[NOTIFY] No email recipients found — skipping');
+      return;
+    }
+
+    console.log(`[NOTIFY] Sending product email to ${uniqueEmails.length} recipients (${customerEmails.length} customers + ${subscriberEmails.length} subscribers)`);
 
     const safeName = escapeHtml(product.name);
     const safeDesc = escapeHtml(product.description?.slice(0, 180) || '');
@@ -113,12 +124,7 @@ exports.sendProductNotification = async (product) => {
       </div>
     `;
 
-    const emails = subscribers
-      .map(s => s.email)
-      .filter(e => e && !frozenEmails.has(e.toLowerCase()));
-    if (emails.length === 0) return;
-
-    for (const email of emails) {
+    for (const email of uniqueEmails) {
       await sendEmail({ to: email, subject: `New Product on Velnora: ${product.name}`, html });
     }
   } catch (error) {
