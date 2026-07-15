@@ -26,7 +26,7 @@ export default function AdminLogin() {
 
       if (data.success) {
         localStorage.setItem('adminToken', data.token);
-        navigate('/adminproducts');
+        navigate('/admin-dashboard');
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid credentials');

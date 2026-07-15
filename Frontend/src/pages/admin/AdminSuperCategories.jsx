@@ -241,7 +241,7 @@ export default function AdminSuperCategories() {
                                         <tr key={sc._id} style={{ borderBottom: '1px solid #1a1410', transition: 'background 0.15s' }}
                                             onMouseEnter={e => e.currentTarget.style.background = 'rgba(201,168,76,0.04)'}
                                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                                            <td style={{ padding: '12px 16px', fontSize: '13px', color: '#8a7a6a' }}>{(currentPage - 1) * ITEMS_PER_PAGE + i + 1}</td>
+                                            <td style={{ padding: '12px 16px', fontSize: '13px', color: '#8a7a6a' }}>{(currentPage - 1) * itemsPerPage + i + 1}</td>
                                             <td style={{ padding: '12px 16px', fontSize: '13px', fontWeight: 600, color: '#c9a84c' }}>{sc.name}</td>
                                             <td style={{ padding: '12px 16px', fontSize: '12px', color: '#8a7a6a', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sc.description || '—'}</td>
                                             <td style={{ padding: '12px 16px', fontSize: '12px', color: '#5b8ee6', fontWeight: 600 }}>{categoryCount(sc._id)}</td>

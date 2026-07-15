@@ -373,7 +373,7 @@ export default function AdminProducts() {
                                             <tr key={p._id} style={{ borderBottom: '1px solid #1a1410', transition: 'background 0.15s' }}
                                                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
                                                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                                                <td style={{ padding: '12px 16px', fontSize: '13px', color: '#8a7a6a' }}>{(currentPage - 1) * ITEMS_PER_PAGE + i + 1}</td>
+                                                <td style={{ padding: '12px 16px', fontSize: '13px', color: '#8a7a6a' }}>{(currentPage - 1) * itemsPerPage + i + 1}</td>
                                                 <td style={{ padding: '12px 16px' }}>
                                                     <img src={p.mainImage || 'https://via.placeholder.com/44'} alt={p.name} style={{ width: '44px', height: '44px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #2a1f10' }} />
                                                 </td>

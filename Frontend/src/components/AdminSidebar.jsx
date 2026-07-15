@@ -8,6 +8,7 @@ import {
 const SIDEBAR_WIDTH = 260;
 
 const sidebarLinks = [
+  { icon: LayoutDashboard, label: 'Dashboard', path: '/admin-dashboard' },
   { icon: Package, label: 'Products', path: '/adminproducts' },
   { icon: Tag, label: 'Categories', path: '/admin-categories' },
   { icon: Layers, label: 'Super Categories', path: '/admin-super-categories' },

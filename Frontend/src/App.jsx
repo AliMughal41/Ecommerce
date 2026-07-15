@@ -24,6 +24,7 @@ import AdminCustomers from './pages/admin/AdminCustomers.jsx'
 import AdminReviews from './pages/admin/AdminReviews.jsx'
 import AdminSuperCategories from './pages/admin/AdminSuperCategories.jsx'
 import AdminProfile from './pages/admin/AdminProfile.jsx'
+import AdminDashboard from './pages/admin/AdminDashboard.jsx'
 import NotFoundPage from './pages/NotFoundPage.jsx'
 
 import CustomerAuthProvider from './context/CustomerAuthContext'
@@ -145,6 +146,11 @@ function App() {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/product/:id" element={<ProductDetailPage wishlist={wishlist} setWishlist={setWishlist} />} />
         <Route path="/admin-secret-login" element={<AdminLogin />} />
+        <Route path="/admin-dashboard" element={
+          <ProtectedRoute>
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
         <Route path="/admin-register" element={<AdminRegister />} />
         <Route path="/admin-verify-otp" element={<AdminVerifyOtp />} />
         <Route path="/admin-orders" element={
