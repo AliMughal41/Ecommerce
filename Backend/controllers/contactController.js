@@ -66,7 +66,7 @@ exports.sendContactEmail = async (req, res) => {
                     </div>
                 </div>
             `,
-        };
+        });
 
         res.status(200).json({ success: true, message: 'Your message has been sent successfully!' });
     } catch (error) {
