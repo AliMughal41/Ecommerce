@@ -155,10 +155,6 @@ export default function AdminDashboard() {
           </div>
 
           {/* Stat Cards */}
-          <style>{`
-            .dash-stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
-            @media (max-width: 768px) { .dash-stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; } }
-          `}</style>
           <div className="dash-stats-grid">
             {statCards.map((card, i) => (
               <div key={i} style={{ background: '#0d0a06', border: '1px solid #2a1f10', borderRadius: '8px', padding: '16px', transition: 'border-color 0.2s' }}

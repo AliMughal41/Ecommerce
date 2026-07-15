@@ -287,6 +287,13 @@ body.menu-open {
    ADMIN PANELS
    ════════════════════════════════════════════════════════════════ */
 
+.dash-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
 @media (max-width: 991px) {
   .admin-sidebar {
     position: fixed !important;
@@ -301,14 +308,16 @@ body.menu-open {
     min-width: 0 !important;
     border: none !important;
   }
-  .admin-stats-grid {
+  .admin-stats-grid,
+  .dash-stats-grid {
     grid-template-columns: repeat(2, 1fr) !important;
   }
 }
 
 @media (max-width: 575px) {
-  .admin-stats-grid {
-    grid-template-columns: 1fr !important;
+  .admin-stats-grid,
+  .dash-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 }
 
