@@ -1,4 +1,4 @@
-const nodemailer = require('nodemailer');
+const { sendEmail } = require('../config/resend');
 const Notification = require('../models/Notification');
 
 const escapeHtml = (str) => {
@@ -33,23 +33,12 @@ exports.sendContactEmail = async (req, res) => {
         });
         await notification.save();
 
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST || 'smtp.gmail.com',
-            port: 465,
-            secure: true,
-            auth: { user: process.env.SMTP_EMAIL, pass: process.env.SMTP_PASSWORD },
-            connectionTimeout: 10000,
-            socketTimeout: 10000,
-            tls: { rejectUnauthorized: false },
-        });
-
         const safeName = escapeHtml(name);
         const safeEmail = escapeHtml(email);
         const safeSubject = escapeHtml(subject);
         const safeMessage = escapeHtml(message);
 
-        const mailOptions = {
-            from: `"Velnora Contact Form" <${process.env.SMTP_EMAIL}>`,
+        await sendEmail({
             to: process.env.MY_EMAIL,
             replyTo: email,
             subject: `[Velnora Contact] ${safeSubject}`,
@@ -78,8 +67,6 @@ exports.sendContactEmail = async (req, res) => {
                 </div>
             `,
         };
-
-        await transporter.sendMail(mailOptions);
 
         res.status(200).json({ success: true, message: 'Your message has been sent successfully!' });
     } catch (error) {

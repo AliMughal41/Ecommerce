@@ -1,6 +1,6 @@
 const Admin = require('../models/Admin');
-const nodemailer = require('nodemailer');
 const crypto = require('crypto');
+const { sendEmail } = require('../config/resend');
 
 const MAX_ADMINS = 2;
 
@@ -18,8 +18,7 @@ const escapeHtml = (str) => {
 // ─── Send OTP Email ──────────────────────────────────────────────────────────
 const sendOtpEmail = async (email, otp, username) => {
   const safeName = escapeHtml(username);
-  const mailOptions = {
-    from: `"Velnora Admin" <${process.env.SMTP_EMAIL}>`,
+  await sendEmail({
     to: email,
     subject: 'Velnora Admin – Email Verification OTP',
     html: `
@@ -39,17 +38,7 @@ const sendOtpEmail = async (email, otp, username) => {
         <p style="color:#555; font-size: 12px; text-align: center;">If you did not request this, please ignore this email.</p>
       </div>
     `,
-  };
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: { user: process.env.SMTP_EMAIL, pass: process.env.SMTP_PASSWORD },
-    connectionTimeout: 10000,
-    socketTimeout: 10000,
-    tls: { rejectUnauthorized: false },
   });
-  await transporter.sendMail(mailOptions);
 };
 
 // ─── Send Token ───────────────────────────────────────────────────────────────

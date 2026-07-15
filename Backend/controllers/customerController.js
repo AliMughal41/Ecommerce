@@ -1,7 +1,7 @@
 const Customer = require('../models/Customer');
-const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const { sendEmail } = require('../config/resend');
 
 // ─── Helper: Generate cryptographically secure OTP ──────────────────────────
 const generateOtp = () => {
@@ -14,23 +14,11 @@ const escapeHtml = (str) => {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 };
 
-// ─── Email Transporter ───────────────────────────────────────────────────────
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT),
-  secure: false,
-  auth: {
-    user: process.env.SMTP_EMAIL,
-    pass: process.env.SMTP_PASSWORD,
-  },
-});
-
 // ─── Send OTP Email ──────────────────────────────────────────────────────────
 const sendOtpEmail = async (email, otp) => {
-  const mailOptions = {
-    from: `"Velnora" <${process.env.SMTP_EMAIL}>`,
+  await sendEmail({
     to: email,
-    subject: 'Password Reset OTP',
+    subject: 'Password Reset OTP — Velnora',
     html: `
       <div style="font-family: 'Segoe UI', sans-serif; background:#0a0a0a; padding: 40px; max-width: 500px; margin: auto; border-radius: 8px; border: 1px solid #3d3020;">
         <div style="text-align:center; margin-bottom: 28px;">
@@ -48,8 +36,7 @@ const sendOtpEmail = async (email, otp) => {
         <p style="color:#555; font-size: 12px; text-align: center;">If you did not request this, please ignore this email.</p>
       </div>
     `,
-  };
-  await transporter.sendMail(mailOptions);
+  });
 };
 
 // ─── Cookie Options ──────────────────────────────────────────────────────────

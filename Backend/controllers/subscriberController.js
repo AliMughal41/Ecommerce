@@ -1,5 +1,5 @@
 const Subscriber = require('../models/Subscriber');
-const nodemailer = require('nodemailer');
+const { sendEmail } = require('../config/resend');
 
 const escapeHtml = (str) => {
   if (!str) return '';
@@ -9,23 +9,9 @@ const escapeHtml = (str) => {
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const websiteUrl = (process.env.FRONTEND_URL || 'https://shopvelnora.store').split(',')[0].trim();
 
-const sendEmail = async ({ to, subject, html }) => {
+const sendSubscriberEmail = async ({ to, subject, html }) => {
   if (!to) return;
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: { user: process.env.SMTP_EMAIL, pass: process.env.SMTP_PASSWORD },
-    connectionTimeout: 10000,
-    socketTimeout: 10000,
-    tls: { rejectUnauthorized: false },
-  });
-  await transporter.sendMail({
-    from: `"Velnora" <${process.env.SMTP_EMAIL}>`,
-    to,
-    subject,
-    html,
-  });
+  await sendEmail({ to, subject, html });
 };
 
 exports.subscribe = async (req, res) => {
@@ -60,7 +46,7 @@ exports.subscribe = async (req, res) => {
       </div>
     `;
 
-    await sendEmail({
+    await sendSubscriberEmail({
       to: normalizedEmail,
       subject: 'Thanks for subscribing to Velnora',
       html,
@@ -132,21 +118,9 @@ exports.sendProductNotification = async (product) => {
       .filter(e => e && !frozenEmails.has(e.toLowerCase()));
     if (emails.length === 0) return;
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: 465,
-      secure: true,
-      auth: { user: process.env.SMTP_EMAIL, pass: process.env.SMTP_PASSWORD },
-      connectionTimeout: 10000,
-      socketTimeout: 10000,
-      tls: { rejectUnauthorized: false },
-    });
-    await transporter.sendMail({
-      from: `"Velnora" <${process.env.SMTP_EMAIL}>`,
-      bcc: emails.join(','),
-      subject: `New Product on Velnora: ${product.name}`,
-      html,
-    });
+    for (const email of emails) {
+      await sendEmail({ to: email, subject: `New Product on Velnora: ${product.name}`, html });
+    }
   } catch (error) {
     console.error('Product notification error:', error.message);
   }
