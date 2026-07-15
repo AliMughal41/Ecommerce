@@ -6,8 +6,8 @@ import { useCustomerAuth } from '../context/CustomerAuthContext';
 import API_URL from '../config';
 
 const navLinks = [
-    { label: 'HOME', path: '/home' },    { label: 'BAGS', path: '/shop?superCategory=Bags' },
-    { label: 'JEWELLERY', path: '/shop?superCategory=Jewellery' },
+    { label: 'HOME', path: '/home' },    { label: 'BAGS', path: '/bags' },
+    { label: 'JEWELLERY', path: '/jewellery' },
     { label: 'SHOP', path: '/shop' },
     { label: 'NEW ARRIVALS', path: '/new-arrivals' },
     { label: 'COLLECTIONS', path: '/collections' },
@@ -221,7 +221,7 @@ export default function Navbar() {
             {/* Navbar - FIXED at top */}
             <nav
                 
-    className={`border-bottom py-3 position-fixed`}
+    className={`border-bottom py-2 position-fixed`}
     style={{
         top: '0',
         left: '0',
@@ -265,9 +265,14 @@ export default function Navbar() {
                     .notif-dropdown::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.2); border-radius: 4px; }
                     .notif-dropdown::-webkit-scrollbar-thumb:hover { background: rgba(201,168,76,0.4); }
                     .notif-item:hover { background: rgba(201,168,76,0.06) !important; }
+                    @media (max-width: 576px) {
+                        .navbar-right-icons { gap: 4px !important; }
+                        .navbar-right-icons > div { padding: 2px 4px !important; }
+                        .navbar-right-icons .icon-label { display: none !important; }
+                    }
                 `}</style>
 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'nowrap', padding: '0 12px', width: '100%', overflow: 'hidden' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'nowrap', padding: '0 12px', width: '100%', overflow: 'visible' }}>
                     {/* Logo */}
                     <div
                         className="d-flex align-items-center gap-2 gap-md-3"
@@ -419,7 +424,7 @@ export default function Navbar() {
 
                     {/* Right Icons - Bigger with labels */}
                     {!isAdmin && (
-                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexShrink: 0 }}>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }} className="navbar-right-icons">
                             <div 
                                 className="d-flex flex-column align-items-center gap-0"
                                 style={{ 
@@ -842,11 +847,11 @@ export default function Navbar() {
             </nav>
 
             {/* Announcement Bar - Below Navbar */}
-            <div className="py-2 border-bottom announcement-bar" style={{ 
-                borderColor: '#3d3020', 
+            <div className="py-2 border-bottom announcement-bar" style={{
+                borderColor: '#3d3020',
                 background: 'linear-gradient(90deg, #1a1400 0%, #2d1f00 50%, #1a1400 100%)',
                 position: 'fixed',
-                top: '88px',
+                top: '60px',
                 left: '0',
                 right: '0',
                 width: '100%',

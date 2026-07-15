@@ -161,7 +161,7 @@ export default function CheckoutPage() {
 
             <Navbar />
 
-            <div className="container-fluid px-3 px-md-5 py-4" style={{ paddingTop: '130px' }}>
+            <div className="container-fluid px-3 px-md-5 py-4" style={{ paddingTop: '96px' }}>
 
                 {/* ── BREADCRUMB ── */}
                 <div className="d-flex align-items-center gap-2 mb-4" style={{ fontSize: '15px' }}>
@@ -314,9 +314,9 @@ export default function CheckoutPage() {
                                     <div className="fw-bold text-white mb-2">Payment Method</div>
                                     <div style={{ color: '#d6d6d6', fontSize: '14px' }}>{paymentMethod === 'cod' ? 'Cash on Delivery' : 'WhatsApp Confirmation'}</div>
                                 </div>
-                                <div className="d-flex gap-3 flex-column flex-sm-row">
-                                    <button className="btn flex-grow-1 fw-bold text-uppercase" style={{ background: 'transparent', border: '1px solid #3d3020', color: '#fff', padding: '12px', borderRadius: '3px' }} onClick={() => setCurrentStep(1)}>Back</button>
-                                    <button className="btn flex-grow-1 fw-bold text-uppercase" style={{ background: '#c9a84c', color: '#0a0a0a', padding: '12px', borderRadius: '3px' }} onClick={handleConfirmOrder} disabled={loading}>
+                                <div className="d-flex gap-3" style={{ flexDirection: 'row' }}>
+                                    <button className="btn flex-grow-1 fw-bold text-uppercase checkout-btn" style={{ background: 'transparent', border: '1px solid #3d3020', color: '#fff', padding: '12px', borderRadius: '3px', fontSize: '13px' }} onClick={() => setCurrentStep(1)}>Back</button>
+                                    <button className="btn flex-grow-1 fw-bold text-uppercase checkout-btn" style={{ background: '#c9a84c', color: '#0a0a0a', padding: '12px', borderRadius: '3px', fontSize: '13px' }} onClick={handleConfirmOrder} disabled={loading}>
                                         {loading ? 'CONFIRMING...' : 'CONFIRM ORDER'}
                                     </button>
                                 </div>
@@ -337,9 +337,9 @@ export default function CheckoutPage() {
                                     <div style={{ color: '#8a7a6a', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>Order ID</div>
                                     <div className="fw-bold text-white" style={{ fontSize: '18px' }}>{createdOrder?.orderNumber || 'Processing'}</div>
                                 </div>
-                                <div className="d-flex gap-3 flex-column flex-sm-row">
-                                    <button className="btn flex-grow-1 fw-bold text-uppercase" style={{ background: 'transparent', border: '1px solid #3d3020', color: '#fff', padding: '12px', borderRadius: '3px' }} onClick={() => navigate('/shop')}>Continue Shopping</button>
-                                    <button className="btn flex-grow-1 fw-bold text-uppercase" style={{ background: '#c9a84c', color: '#0a0a0a', padding: '12px', borderRadius: '3px' }} onClick={() => navigate('/track-order')}>Track Order</button>
+                                <div className="d-flex gap-3" style={{ flexDirection: 'row' }}>
+                                    <button className="btn flex-grow-1 fw-bold text-uppercase checkout-btn" style={{ background: 'transparent', border: '1px solid #3d3020', color: '#fff', padding: '12px', borderRadius: '3px', fontSize: '13px' }} onClick={() => navigate('/shop')}>Continue Shopping</button>
+                                    <button className="btn flex-grow-1 fw-bold text-uppercase checkout-btn" style={{ background: '#c9a84c', color: '#0a0a0a', padding: '12px', borderRadius: '3px', fontSize: '13px' }} onClick={() => navigate('/track-order')}>Track Order</button>
                                 </div>
                                 {!customer && (
                                     <div className="mt-4 p-4" style={{ border: '1px solid #c9a84c', borderRadius: '6px', background: 'rgba(201,168,76,0.05)' }}>
@@ -350,11 +350,11 @@ export default function CheckoutPage() {
                                                 <div style={{ color: '#a09080', fontSize: '13px' }}>Track orders, view history, save addresses & checkout faster next time!</div>
                                             </div>
                                         </div>
-                                        <div className="d-flex gap-3 flex-column flex-sm-row">
-                                            <button className="btn flex-grow-1 fw-bold text-uppercase" style={{ background: '#c9a84c', color: '#0a0a0a', padding: '10px', borderRadius: '3px', fontSize: '13px' }} onClick={() => navigate('/register')}>
+                                        <div className="d-flex gap-3" style={{ flexDirection: 'row' }}>
+                                            <button className="btn flex-grow-1 fw-bold text-uppercase checkout-btn" style={{ background: '#c9a84c', color: '#0a0a0a', padding: '10px', borderRadius: '3px', fontSize: '13px' }} onClick={() => navigate('/register')}>
                                                 <UserPlus size={14} className="me-1" /> Create Account
                                             </button>
-                                            <button className="btn flex-grow-1 fw-bold text-uppercase" style={{ background: 'transparent', border: '1px solid #3d3020', color: '#c9a84c', padding: '10px', borderRadius: '3px', fontSize: '13px' }} onClick={() => navigate('/login')}>
+                                            <button className="btn flex-grow-1 fw-bold text-uppercase checkout-btn" style={{ background: 'transparent', border: '1px solid #3d3020', color: '#c9a84c', padding: '10px', borderRadius: '3px', fontSize: '13px' }} onClick={() => navigate('/login')}>
                                                 <LogIn size={14} className="me-1" /> Sign In
                                             </button>
                                         </div>
@@ -486,6 +486,16 @@ export default function CheckoutPage() {
             </div>
 
             <Footer />
+
+            <style>{`
+                @media (max-width: 576px) {
+                    .checkout-btn {
+                        padding: 8px 6px !important;
+                        font-size: 11px !important;
+                        letter-spacing: 0.5px !important;
+                    }
+                }
+            `}</style>
         </div>
     );
 }

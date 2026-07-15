@@ -426,7 +426,7 @@ const MyAccount = () => {
       <Navbar />
 
       <div
-        style={{ paddingTop: '130px', paddingBottom: '60px' }}
+        style={{ paddingTop: '96px', paddingBottom: '60px' }}
         className="container"
       >
         {isMobile && (

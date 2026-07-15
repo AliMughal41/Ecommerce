@@ -62,7 +62,7 @@ const CustomerLogin = () => {
         style={{
           minHeight: '100vh',
           background: '#0a0a0a',
-          paddingTop: '130px',
+          paddingTop: '96px',
           paddingBottom: '60px',
           display: 'flex',
           justifyContent: 'center',

@@ -192,7 +192,7 @@ export default function HomePage({ wishlist, setWishlist }) {
   const scrollGlow = 0.15 + scrollProgress * 0.15;
 
   return (
-   <div className="bg-black text-white" style={{ fontFamily: "'Inter', sans-serif", paddingTop: '130px' }}>
+   <div className="bg-black text-white" style={{ fontFamily: "'Inter', sans-serif", paddingTop: '96px' }}>
       
       {/* ─── CUSTOM CURSOR ────────────────────────────────────────── */}
       <style>{`

@@ -22,12 +22,14 @@ import {
   Truck,
   PackageCheck,
   X,
-  Loader2
+  Loader2,
+  Menu,
+  Bell
 } from 'lucide-react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Navbar from '../../components/Navbar';
-import Footer from '../../components/Footer';
+import AdminSidebar from '../../components/AdminSidebar';
+import Pagination from '../../components/Pagination';
 import API_URL from '../../config';
 
 const statusColors = {
@@ -61,7 +63,8 @@ export default function AdminOrders() {
   const [updatingId, setUpdatingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
-  const itemsPerPage = 5;
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -233,17 +236,26 @@ export default function AdminOrders() {
   ];
 
   return (
-       <div className="bg-black text-white" style={{ fontFamily: "'Inter', sans-serif", paddingTop: '10px' }}>
-
-    <div style={{ 
-      fontFamily: "'Segoe UI', system-ui, sans-serif", 
-      background: '#0a0a0a', 
-      minHeight: '100vh', 
-      color: '#fff' 
-    }}>
-      <Navbar />
-
-      <div className="container-fluid px-3 px-md-4 py-4" style={{ paddingTop: '130px' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0a', color: '#fff', fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+      <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      
+      <div className="admin-main-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        {/* Top Bar */}
+        <div style={{ height: '60px', background: '#0d0a06', borderBottom: '1px solid #2a1f10', display: 'flex', alignItems: 'center', padding: '0 24px', gap: '16px', flexShrink: 0 }}>
+          <button onClick={() => setSidebarOpen(s => !s)} className="admin-hamburger" style={{ background: 'transparent', border: 'none', color: '#8a7a6a', cursor: 'pointer', padding: '4px' }}>
+            <Menu size={20} />
+          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '30px', height: '30px', borderRadius: '50%', border: '1.5px solid #c9a84c', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+              <img src="/images/logo.png" alt="VELNORA" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            </div>
+            <span style={{ fontWeight: 700, fontSize: '14px', letterSpacing: '2px', color: '#c9a84c' }}>VELNORA</span>
+          </div>
+          <div style={{ flex: 1 }} />
+          <Bell size={18} style={{ color: '#8a7a6a', cursor: 'pointer' }} />
+        </div>
+        
+        <div style={{ flex: 1, padding: '24px', overflowY: 'auto' }}>
 
         {/* ── PAGE HEADER ── */}
         <div className="d-flex justify-content-between align-items-center mb-4">
@@ -883,89 +895,14 @@ export default function AdminOrders() {
               </div>
 
               {/* ── PAGINATION ── */}
-              <div style={{
-                padding: '10px 14px',
-                borderTop: '1px solid #3d3020',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                gap: '6px'
-              }}>
-                <div style={{ fontSize: '12px', color: '#8a7a6a' }}>
-                  Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredOrders.length)} of {filteredOrders.length} entries
-                </div>
-                <div className="d-flex gap-1">
-                  <button
-                    className="btn btn-sm"
-                    style={{
-                      background: 'transparent',
-                      border: '1px solid #3d3020',
-                      color: currentPage === 1 ? '#555' : '#fff',
-                      padding: '3px 8px',
-                      fontSize: '11px',
-                      cursor: currentPage === 1 ? 'default' : 'pointer'
-                    }}
-                    disabled={currentPage === 1}
-                    onClick={() => handlePageChange(currentPage - 1)}
-                  >
-                    <ChevronLeft size={13} />
-                  </button>
-                  {[...Array(Math.min(totalPages, 5))].map((_, i) => {
-                    const pageNum = i + 1;
-                    return (
-                      <button
-                        key={i}
-                        className="btn btn-sm"
-                        style={{
-                          background: currentPage === pageNum ? '#c9a84c' : 'transparent',
-                          border: currentPage === pageNum ? '1px solid #c9a84c' : '1px solid #3d3020',
-                          color: currentPage === pageNum ? '#0a0a0a' : '#fff',
-                          padding: '3px 8px',
-                          fontSize: '11px',
-                          cursor: 'pointer'
-                        }}
-                        onClick={() => handlePageChange(pageNum)}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-                  {totalPages > 5 && (
-                    <>
-                      <span style={{ color: '#555', padding: '3px 3px', fontSize: '11px' }}>...</span>
-                      <button
-                        className="btn btn-sm"
-                        style={{
-                          background: 'transparent',
-                          border: '1px solid #3d3020',
-                          color: '#fff',
-                          padding: '3px 8px',
-                          fontSize: '11px',
-                          cursor: 'pointer'
-                        }}
-                        onClick={() => handlePageChange(totalPages)}
-                      >
-                        {totalPages}
-                      </button>
-                    </>
-                  )}
-                  <button
-                    className="btn btn-sm"
-                    style={{
-                      background: 'transparent',
-                      border: '1px solid #3d3020',
-                      color: currentPage === totalPages || totalPages === 0 ? '#555' : '#fff',
-                      padding: '3px 8px',
-                      fontSize: '11px',
-                      cursor: currentPage === totalPages || totalPages === 0 ? 'default' : 'pointer'
-                    }}
-                    disabled={currentPage === totalPages || totalPages === 0}
-                    onClick={() => handlePageChange(currentPage + 1)}
-                  >
-                    <ChevronRight size={13} />
-                  </button>
-                </div>
+              <div style={{ padding: '0 14px' }}>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={(page) => { setCurrentPage(page); }}
+                  itemsPerPage={itemsPerPage}
+                  onItemsPerPageChange={(val) => { setItemsPerPage(val); setCurrentPage(1); }}
+                />
               </div>
             </div>
           </div>
@@ -1058,8 +995,6 @@ export default function AdminOrders() {
           </div>
         </div>
       )}
-
-      <Footer />
     </div>
     </div>
   );

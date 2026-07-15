@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Users, Mail, Phone, Trash2, Search, Loader2, X, ShieldCheck, UserX, Bell, Snowflake, ShieldOff } from 'lucide-react';
+import { Users, Mail, Phone, Trash2, Search, Loader2, X, ShieldCheck, UserX, Bell, Snowflake, ShieldOff, Menu } from 'lucide-react';
 import axios from 'axios';
-import Navbar from '../../components/Navbar';
-import Footer from '../../components/Footer';
+import AdminSidebar from '../../components/AdminSidebar';
+import Pagination from '../../components/Pagination';
 import API_URL from '../../config';
 
 export default function AdminCustomers() {
@@ -17,6 +17,9 @@ export default function AdminCustomers() {
   const [notifForm, setNotifForm] = useState({ title: '', message: '' });
   const [sendingNotif, setSendingNotif] = useState(false);
   const [freezingId, setFreezingId] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(8);
 
   const fetchData = async () => {
     setLoading(true);
@@ -88,6 +91,12 @@ export default function AdminCustomers() {
     return s.email?.toLowerCase().includes(term);
   });
 
+  const totalCustomerPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+  const totalSubscriberPages = Math.ceil(filteredSubscribers.length / itemsPerPage);
+  const paginatedCustomers = filteredCustomers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const paginatedSubscribers = filteredSubscribers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const currentTotalPages = activeTab === 'customers' ? totalCustomerPages : totalSubscriberPages;
+
   const styles = {
     card: {
       background: 'rgba(15,15,15,0.95)',
@@ -128,9 +137,26 @@ export default function AdminCustomers() {
   };
 
   return (
-       <div className="bg-black text-white" style={{ fontFamily: "'Inter', sans-serif", paddingTop: '130px' }}>
-      <Navbar />
-      <div className="container-fluid px-3 px-md-4 py-4" style={{ paddingTop: '130px' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0a', color: '#fff', fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+      <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      <div className="admin-main-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        {/* Top Bar */}
+        <div style={{ height: '60px', background: '#0d0a06', borderBottom: '1px solid #2a1f10', display: 'flex', alignItems: 'center', padding: '0 24px', gap: '16px', flexShrink: 0 }}>
+          <button onClick={() => setSidebarOpen(s => !s)} className="admin-hamburger" style={{ background: 'transparent', border: 'none', color: '#8a7a6a', cursor: 'pointer', padding: '4px' }}>
+            <Menu size={20} />
+          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '30px', height: '30px', borderRadius: '50%', border: '1.5px solid #c9a84c', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+              <img src="/images/logo.png" alt="VELNORA" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            </div>
+            <span style={{ fontWeight: 700, fontSize: '14px', letterSpacing: '2px', color: '#c9a84c' }}>VELNORA</span>
+          </div>
+          <div style={{ flex: 1 }} />
+          <Bell size={18} style={{ color: '#8a7a6a', cursor: 'pointer' }} />
+        </div>
+
+        <div style={{ flex: 1, padding: '24px', overflowY: 'auto' }}>
         <div className="d-flex justify-content-between align-items-center mb-4">
           <div>
             <h2 className="fw-bold text-uppercase mb-0" style={{ fontSize: 'clamp(20px, 3vw, 28px)', letterSpacing: '3px', fontFamily: "'Playfair Display','Times New Roman',serif" }}>
@@ -187,10 +213,10 @@ export default function AdminCustomers() {
           <div className="col-lg-10 col-md-9">
             <div style={{ ...styles.card, overflow: 'hidden' }}>
               <div className="d-flex align-items-center gap-3 px-3 py-3" style={{ borderBottom: '1px solid #3d3020' }}>
-                <button style={styles.tab(activeTab === 'customers')} onClick={() => { setActiveTab('customers'); setSearchTerm(''); }}>
+                <button style={styles.tab(activeTab === 'customers')} onClick={() => { setActiveTab('customers'); setSearchTerm(''); setCurrentPage(1); }}>
                   <Users size={13} className="me-1" /> Registered Users ({customers.length})
                 </button>
-                <button style={styles.tab(activeTab === 'subscribers')} onClick={() => { setActiveTab('subscribers'); setSearchTerm(''); }}>
+                <button style={styles.tab(activeTab === 'subscribers')} onClick={() => { setActiveTab('subscribers'); setSearchTerm(''); setCurrentPage(1); }}>
                   <Mail size={13} className="me-1" /> Subscribers ({subscribers.length})
                 </button>
               </div>
@@ -201,6 +227,7 @@ export default function AdminCustomers() {
                   <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
                 </div>
               ) : activeTab === 'customers' ? (
+                <>
                 <div className="table-responsive">
                   <table className="table table-dark table-borderless" style={{ marginBottom: 0 }}>
                     <thead>
@@ -215,11 +242,11 @@ export default function AdminCustomers() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredCustomers.length > 0 ? filteredCustomers.map((c, i) => (
+                      {paginatedCustomers.length > 0 ? paginatedCustomers.map((c, i) => (
                         <tr key={c._id} style={{ transition: 'background 0.2s' }}
                           onMouseEnter={e => e.currentTarget.style.background = '#1a1410'}
                           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                          <td style={styles.td}>{i + 1}</td>
+                          <td style={styles.td}>{(currentPage - 1) * itemsPerPage + i + 1}</td>
                           <td style={styles.td}>
                             <div className="d-flex align-items-center gap-2">
                               <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(201,168,76,0.12)', border: '1px solid #3d3020', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#c9a84c', fontWeight: 600, flexShrink: 0 }}>
@@ -274,7 +301,18 @@ export default function AdminCustomers() {
                     </tbody>
                   </table>
                 </div>
+                <div style={{ padding: '0 14px' }}>
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalCustomerPages}
+                      onPageChange={setCurrentPage}
+                      itemsPerPage={itemsPerPage}
+                      onItemsPerPageChange={(val) => { setItemsPerPage(val); setCurrentPage(1); }}
+                    />
+                  </div>
+                </>
               ) : (
+                <>
                 <div className="table-responsive">
                   <table className="table table-dark table-borderless" style={{ marginBottom: 0 }}>
                     <thead>
@@ -286,11 +324,11 @@ export default function AdminCustomers() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredSubscribers.length > 0 ? filteredSubscribers.map((s, i) => (
+                      {paginatedSubscribers.length > 0 ? paginatedSubscribers.map((s, i) => (
                         <tr key={s._id} style={{ transition: 'background 0.2s' }}
                           onMouseEnter={e => e.currentTarget.style.background = '#1a1410'}
                           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                          <td style={styles.td}>{i + 1}</td>
+                          <td style={styles.td}>{(currentPage - 1) * itemsPerPage + i + 1}</td>
                           <td style={styles.td}>{s.email}</td>
                           <td style={{ ...styles.td, color: '#8a7a6a', fontSize: '12px' }}>
                             {new Date(s.subscribedAt || s.createdAt).toLocaleDateString()}
@@ -308,11 +346,21 @@ export default function AdminCustomers() {
                     </tbody>
                   </table>
                 </div>
+                <div style={{ padding: '0 14px' }}>
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalSubscriberPages}
+                      onPageChange={setCurrentPage}
+                      itemsPerPage={itemsPerPage}
+                      onItemsPerPageChange={(val) => { setItemsPerPage(val); setCurrentPage(1); }}
+                    />
+                  </div>
+                </>
               )}
             </div>
           </div>
         </div>
-      </div>
+        </div>
 
       {deleteConfirm && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}
@@ -338,7 +386,7 @@ export default function AdminCustomers() {
         </div>
       )}
 
-      <Footer />
+      </div>
     </div>
   );
 }

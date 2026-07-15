@@ -60,7 +60,7 @@ export default function ContactPage() {
     };
 
     return (
-<div style={{ fontFamily: "'Segoe UI', system-ui, sans-serif", background: '#0a0a0a', minHeight: '100vh', color: '#fff', paddingTop: '130px' }}>
+<div style={{ fontFamily: "'Segoe UI', system-ui, sans-serif", background: '#0a0a0a', minHeight: '100vh', color: '#fff', paddingTop: '96px' }}>
             <Navbar />
 
             {/* ── HERO + FORM SECTION ── */}

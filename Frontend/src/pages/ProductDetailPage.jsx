@@ -139,7 +139,7 @@ export default function ProductDetailPage({ wishlist, setWishlist }) {
         <div style={{ fontFamily: "'Segoe UI', system-ui, sans-serif", background: '#0a0a0a', minHeight: '100vh', color: '#fff' }}>
             <Navbar />
 
-            <div className="container-fluid px-3 px-md-5 py-4" style={{ paddingTop: '130px' }}>
+            <div className="container-fluid px-3 px-md-5 py-4" style={{ paddingTop: '96px' }}>
 
                 {/* Breadcrumb */}
                 <div className="d-flex align-items-center gap-2 mb-4" style={{ fontSize: '13px' }}>

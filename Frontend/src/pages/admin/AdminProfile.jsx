@@ -3,10 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAlert } from '../../context/AlertContext';
 import {
-    LayoutDashboard, Package, Tag, ShoppingCart, Users, Ticket,
-    Star, Image, Settings, UserCog, BarChart2, LogOut, Menu, X,
-    Shield, User, Mail, Lock, Trash2, Loader2, ChevronLeft, ChevronRight
+    Users, Menu, X, Shield, User, Lock, Trash2, Loader2, ChevronLeft, ChevronRight
 } from 'lucide-react';
+import AdminSidebar from '../../components/AdminSidebar';
 import API_URL from '../../config';
 
 const inputStyle = {
@@ -133,60 +132,14 @@ export default function AdminProfile() {
         <div className="bg-black text-white" style={{ fontFamily: "'Inter', sans-serif", paddingTop: '10px' }}>
             <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0a', color: '#fff', fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
 
-                {/* ── SIDEBAR ── */}
-                <div className="admin-sidebar" style={{
-                    width: sidebarOpen ? '240px' : '0px', minWidth: sidebarOpen ? '240px' : '0',
-                    background: '#0d0a06', borderRight: '1px solid #2a1f10',
-                    transition: 'all 0.3s', overflow: 'hidden', flexShrink: 0,
-                    display: 'flex', flexDirection: 'column'
-                }}>
-                    <div style={{ padding: '24px 20px', borderBottom: '1px solid #2a1f10', textAlign: 'center' }}>
-                        <div style={{ width: '52px', height: '52px', borderRadius: '50%', border: '2px solid #c9a84c', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px', overflow: 'hidden' }}>
-                            <img src="/images/logo.png" alt="VELNORA" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                        </div>
-                        <div style={{ fontSize: '15px', fontWeight: 800, letterSpacing: '3px', color: '#c9a84c' }}>VELNORA</div>
-                        <div style={{ fontSize: '10px', color: '#5a4a3a', letterSpacing: '1px', marginTop: '3px' }}>ADMIN PANEL</div>
-                    </div>
-
-                    <nav style={{ flex: 1, padding: '12px 0', overflowY: 'auto' }}>
-                        {[
-                            { icon: LayoutDashboard, label: 'Dashboard', path: '/adminproducts', page: 'dashboard' },
-                            { icon: Package, label: 'Products', path: '/adminproducts', page: 'products' },
-                            { icon: Tag, label: 'Categories', path: '/admin-categories' },
-                            { icon: ShoppingCart, label: 'Orders', path: '/admin-orders' },
-                            { icon: Users, label: 'Customers', path: '/admin-customers' },
-                            { icon: Star, label: 'Reviews', path: '/admin-reviews' },
-                            { icon: Shield, label: 'Admin Profile', path: '/admin-profile' },
-                            { icon: LogOut, label: 'Logout', path: null },
-                        ].map((item) => (
-                            <div
-                                key={item.label}
-                                onClick={() => {
-                                    if (item.label === 'Logout') { handleLogout(); return; }
-                                    navigate(item.path);
-                                }}
-                                style={{
-                                    display: 'flex', alignItems: 'center', gap: '12px',
-                                    padding: '11px 20px', cursor: 'pointer', transition: 'all 0.2s',
-                                    background: item.path === '/admin-profile' ? 'rgba(201,168,76,0.1)' : 'transparent',
-                                    borderLeft: item.path === '/admin-profile' ? '3px solid #c9a84c' : '3px solid transparent',
-                                }}
-                                onMouseEnter={e => { if (item.path !== '/admin-profile') e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
-                                onMouseLeave={e => { if (item.path !== '/admin-profile') e.currentTarget.style.background = 'transparent'; }}
-                            >
-                                <item.icon size={17} style={{ color: item.path === '/admin-profile' ? '#c9a84c' : '#6a5a4a' }} />
-                                <span style={{ fontSize: '13px', fontWeight: 600, color: item.path === '/admin-profile' ? '#c9a84c' : '#8a7a6a', letterSpacing: '0.5px' }}>{item.label}</span>
-                            </div>
-                        ))}
-                    </nav>
-                </div>
+                <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
                 {/* ── MAIN CONTENT ── */}
-                <div style={{ flex: 1, minWidth: 0, overflow: 'auto' }}>
+                <div className="admin-main-content" style={{ flex: 1, minWidth: 0, overflow: 'auto' }}>
                     {/* Top Bar */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid #1a1410', background: '#0d0a06' }}>
                         <div className="d-flex align-items-center gap-3">
-                            <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: 'transparent', border: 'none', color: '#c9a84c', cursor: 'pointer', padding: '4px' }}>
+                            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="admin-hamburger" style={{ background: 'transparent', border: 'none', color: '#c9a84c', cursor: 'pointer', padding: '4px' }}>
                                 {sidebarOpen ? <ChevronLeft size={20} /> : <Menu size={20} />}
                             </button>
                             <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#fff', margin: 0 }}>Admin Profile & Settings</h2>

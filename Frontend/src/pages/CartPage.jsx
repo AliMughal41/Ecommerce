@@ -2,20 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Trash2, Minus, Plus, ShoppingCart, ArrowLeft, MessageCircle, ShieldCheck, Shield, User, Star, Heart, ChevronLeft, ChevronRight, Tag, Truck, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
+import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import API_URL from '../config';
 
 /* ─── INITIAL CART DATA (start empty; items come from ShopPage) ─────────────────────────────────────────────── */
 const initialCart = [];
-
-const suggestedProducts = [
-    { id: 10, name: 'Nike Air Force 1', condition: '9/10', price: 3199, rating: 5, img: 'https://images.unsplash.com/photo-1600269452121-4f2416e55c28?w=400&h=400&fit=crop' },
-    { id: 11, name: 'Adidas Ultraboost 22', condition: '9/10', price: 4299, rating: 5, img: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=400&h=400&fit=crop' },
-    { id: 12, name: 'Leather Laptop Bag', condition: '9/10', price: 3499, rating: 5, img: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&h=400&fit=crop' },
-    { id: 13, name: 'Puma RS-X', condition: '9/10', price: 2999, rating: 5, img: 'https://images.unsplash.com/photo-1556906781-9a412961a28c?w=400&h=400&fit=crop' },
-    { id: 14, name: 'Samsonite Cabin Luggage', condition: '9/10', price: 7499, rating: 5, img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=400&fit=crop' },
-];
 
 const FREE_DELIVERY_THRESHOLD = 5000;
 
@@ -28,6 +22,7 @@ const scroll = (id, dir) => {
 export default function CartPage() {
     const [cart, setCart] = useState(initialCart);
     const [wishlist, setWishlist] = useState([]);
+    const [suggestedProducts, setSuggestedProducts] = useState([]);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -36,6 +31,23 @@ export default function CartPage() {
         if (savedCart.length) {
             setCart(savedCart);
         }
+    }, []);
+
+    useEffect(() => {
+        const fetchSuggested = async () => {
+            try {
+                const { data } = await axios.get(`${API_URL}/api/products`);
+                if (data.success) {
+                    const latest = data.products
+                        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                        .slice(0, 8);
+                    setSuggestedProducts(latest);
+                }
+            } catch (err) {
+                console.error('Failed to fetch suggested products', err);
+            }
+        };
+        fetchSuggested();
     }, []);
 
     const updateQty = (id, delta) => {
@@ -105,7 +117,7 @@ export default function CartPage() {
 
             <Navbar />
 
-            <div className="container-fluid px-3 px-md-5 py-4" style={{ paddingTop: '130px' }}>
+            <div className="container-fluid px-3 px-md-5 py-4" style={{ paddingTop: '96px' }}>
 
                 {/* ── PAGE TITLE ── */}
                 <h1 className="fw-bold text-white text-uppercase mb-1"
@@ -337,6 +349,7 @@ export default function CartPage() {
                 </div>
 
                 {/* ── YOU MAY ALSO LIKE ── */}
+                {suggestedProducts.length > 0 && (
                 <div className="mt-5 pt-4" style={{ borderTop: '1px solid #3d3020' }}>
                     <h2 className="text-center fw-bold text-uppercase mb-2" style={{ fontSize: '24px', letterSpacing: '5px' }}>YOU MAY ALSO LIKE</h2>
                     <div className="mx-auto mb-4" style={{ width: '60px', height: '2px', background: '#c9a84c' }}></div>
@@ -349,33 +362,32 @@ export default function CartPage() {
                             <ChevronLeft size={18} />
                         </button>
                         <div id="suggestions" className="d-flex gap-3 overflow-auto" style={{ scrollBehavior: 'smooth', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                            {suggestedProducts.map(p => (
-                                <div key={p.id} className="flex-shrink-0 overflow-hidden position-relative"
+                            {suggestedProducts.map(p => {
+                                const pid = p._id || p.id;
+                                const img = p.mainImage || p.images?.[0]?.url || '';
+                                return (
+                                <div key={pid} className="flex-shrink-0 overflow-hidden position-relative"
                                     style={{ width: '200px', border: '1px solid #3d3020', borderRadius: '4px', cursor: 'pointer', background: '#0f0c09', transition: 'transform 0.2s, border-color 0.2s' }}
+                                    onClick={() => navigate('/shop')}
                                     onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.borderColor = '#c9a84c'; }}
                                     onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = '#3d3020'; }}>
 
-                                    <button className="position-absolute top-0 end-0 m-2 border-0 p-0"
-                                        style={{ zIndex: 2, background: 'transparent', cursor: 'pointer' }}
-                                        onClick={() => toggleWishlist(p.id)}>
-                                        <Heart size={18} strokeWidth={1} fill={wishlist.includes(p.id) ? '#b89456' : 'none'} color={wishlist.includes(p.id) ? '#b89456' : '#ffffff'} />
-                                    </button>
-
                                     <div style={{ height: '180px', background: '#e5e5e5', overflow: 'hidden' }}>
-                                        <img src={p.img} alt={p.name} className="w-100 h-100" style={{ objectFit: 'cover', transition: 'transform 0.4s' }}
+                                        <img src={img} alt={p.name} className="w-100 h-100" style={{ objectFit: 'cover', transition: 'transform 0.4s' }}
                                             onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.06)'}
                                             onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'} />
                                     </div>
 
                                     <div className="p-3 text-center">
                                         <div className="fw-bold text-white mb-1" style={{ fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
-                                        <div className="mb-1" style={{ fontSize: '11px', color: '#8a8a8a' }}>Condition: {p.condition}</div>
+                                        <div className="mb-1" style={{ fontSize: '11px', color: '#8a8a8a' }}>Condition: {p.condition || '9/10'}</div>
                                         <div className="d-flex justify-content-center gap-1 mb-2">
-                                            {[1, 2, 3, 4, 5].map(s => <Star key={s} size={10} fill="#c9a84c" color="#c9a84c" />)}
+                                            {[1, 2, 3, 4, 5].map(s => <Star key={s} size={10} fill={s <= Math.round(p.rating || 4) ? '#c9a84c' : 'none'} color="#c9a84c" />)}
                                         </div>
-                                        <div className="mb-2" style={{ color: '#c9a84c', fontSize: '14px', fontWeight: 600 }}>Rs. {p.price.toLocaleString()}</div>
+                                        <div className="mb-2" style={{ color: '#c9a84c', fontSize: '14px', fontWeight: 600 }}>Rs. {(p.salePrice || p.price).toLocaleString()}</div>
                                         <button className="btn w-100 d-flex align-items-center justify-content-center gap-2"
                                             style={{ background: 'transparent', border: '1px solid rgba(201,168,76,0.3)', padding: '6px 0', borderRadius: '3px', transition: 'all 0.2s' }}
+                                            onClick={(e) => { e.stopPropagation(); navigate('/shop'); }}
                                             onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(201,168,76,0.1)'}
                                             onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
                                             <ShoppingCart size={12} style={{ color: '#c9a84c' }} />
@@ -383,7 +395,8 @@ export default function CartPage() {
                                         </button>
                                     </div>
                                 </div>
-                            ))}
+                                );
+                            })}
                         </div>
                         <button
                             className="position-absolute top-50 translate-middle-y d-flex align-items-center justify-content-center border-0"
@@ -393,6 +406,7 @@ export default function CartPage() {
                         </button>
                     </div>
                 </div>
+                )}
 
                 {/* ── FEATURES BAR ── */}
                 <div className="mt-5 py-4" style={{ borderTop: '1px solid #3d3020', borderBottom: '1px solid #3d3020' }}>

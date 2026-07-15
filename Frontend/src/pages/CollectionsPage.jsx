@@ -77,7 +77,7 @@ export default function CollectionsPage() {
     const navigate = useNavigate();
 
     return (
-<div className="text-white" style={{ fontFamily: "'Segoe UI', system-ui, sans-serif", background: '#0a0a0a', minHeight: '100vh', paddingTop: '130px' }}>
+<div className="text-white" style={{ fontFamily: "'Segoe UI', system-ui, sans-serif", background: '#0a0a0a', minHeight: '100vh', paddingTop: '96px' }}>
             <Navbar />
 
             {/* Page Header */}

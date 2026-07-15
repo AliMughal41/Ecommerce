@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import HomePage from './pages/HomePage'
 import ShopPage from './pages/ShopPage'
+import BagsPage from './pages/BagsPage'
+import JewelleryPage from './pages/JewelleryPage'
 import CollectionsPage from './pages/CollectionsPage'
 import NewArrivalsPage from './pages/NewArrivalsPage'
 import BrandsPage from './pages/BrandsPage'
@@ -116,6 +118,8 @@ function App() {
       <Routes>
         <Route path="/" element={<ShopPage wishlist={wishlist} setWishlist={setWishlist} />} />
         <Route path="/shop" element={<ShopPage wishlist={wishlist} setWishlist={setWishlist} />} />
+        <Route path="/bags" element={<BagsPage wishlist={wishlist} setWishlist={setWishlist} />} />
+        <Route path="/jewellery" element={<JewelleryPage wishlist={wishlist} setWishlist={setWishlist} />} />
         <Route path="/home" element={<HomePage />} />
         <Route path="/collections" element={<CollectionsPage />} />
         <Route path="/new-arrivals" element={<NewArrivalsPage wishlist={wishlist} setWishlist={setWishlist} />} />

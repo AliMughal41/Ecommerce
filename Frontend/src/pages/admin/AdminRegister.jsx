@@ -53,7 +53,7 @@ export default function AdminRegister() {
   };
 
   return (
-       <div className="bg-black text-white" style={{ fontFamily: "'Inter', sans-serif", paddingTop: '130px' }}>
+       <div className="bg-black text-white" style={{ fontFamily: "'Inter', sans-serif", paddingTop: '96px' }}>
 
     <div style={{
       display: 'flex', minHeight: '100vh', background: '#0a0a0a', color: '#fff',

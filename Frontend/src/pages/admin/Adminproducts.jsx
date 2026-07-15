@@ -10,25 +10,11 @@ import {
     Upload, AlertTriangle, Filter, ChevronLeft, ChevronRight, Loader2
 } from 'lucide-react';
 import API_URL from '../../config';
+import AdminSidebar from '../../components/AdminSidebar';
+import Pagination from '../../components/Pagination';
 
 /* ─── INITIAL DATA ──────────────────────────────────────────────────── */
 const initialProducts = [];
-
-const sidebarLinks = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: 'dashboard' },
-    { icon: Package, label: 'Products', path: 'products' },
-    { icon: Tag, label: 'Categories', path: 'categories' },
-    { icon: ShoppingCart, label: 'Orders', path: 'orders', badge: 8 },
-    { icon: Users, label: 'Customers', path: 'customers' },
-    { icon: Ticket, label: 'Coupons', path: 'coupons' },
-    { icon: Star, label: 'Reviews', path: 'reviews' },
-    { icon: Image, label: 'Banner Sliders', path: 'banners' },
-    { icon: Settings, label: 'Site Settings', path: 'settings' },
-    { icon: UserCog, label: 'Admin Profile', path: 'admin-profile' },
-    { icon: LogOut, label: 'Logout', path: 'logout' },
-];
-
-const ITEMS_PER_PAGE = 5;
 
 const emptyForm = { name: '', category: '', price: '', salePrice: '', stock: '', description: '', status: 'Active', images: [] };
 
@@ -52,6 +38,7 @@ export default function AdminProducts() {
     const [filterCat, setFilterCat] = useState('All Categories');
     const [filterStatus, setFilterStatus] = useState('Status');
     const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(5);
 
     // Modals
     const [showAdd, setShowAdd] = useState(false);
@@ -100,8 +87,8 @@ export default function AdminProducts() {
         return matchSearch && matchCat && matchStatus;
     });
 
-    const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-    const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(filtered.length / itemsPerPage);
+    const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     /* ── Stats ── */
     const totalStock = products.reduce((s, p) => s + p.stock, 0);
@@ -237,67 +224,14 @@ export default function AdminProducts() {
 
         <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0a', color: '#fff', fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
 
-            {/* ── SIDEBAR ── */}
-            <div className="admin-sidebar" style={{
-                width: sidebarOpen ? '240px' : '0px', minWidth: sidebarOpen ? '240px' : '0',
-                background: '#0d0a06', borderRight: '1px solid #2a1f10',
-                transition: 'all 0.3s', overflow: 'hidden', flexShrink: 0,
-                display: 'flex', flexDirection: 'column'
-            }}>
-                {/* Logo */}
-                <div style={{ padding: '24px 20px', borderBottom: '1px solid #2a1f10', textAlign: 'center' }}>
-                    <div style={{ width: '52px', height: '52px', borderRadius: '50%', border: '2px solid #c9a84c', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px', overflow: 'hidden' }}>
-                        <img src="/images/logo.png" alt="VELNORA" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                    </div>
-                    <div style={{ fontWeight: 800, fontSize: '16px', letterSpacing: '3px', color: '#fff' }}>VELNORA</div>
-                    <div style={{ fontSize: '9px', color: '#8a7a6a', letterSpacing: '1.5px' }}>BAGS & JEWELLERY</div>
-                </div>
-
-                {/* Nav Links */}
-                <nav style={{ flex: 1, padding: '12px 0', overflowY: 'auto' }}>
-                    {sidebarLinks.map(({ icon: Icon, label, path, badge }) => (
-                        <div key={path}
-                            style={{
-                                display: 'flex', alignItems: 'center', gap: '12px',
-                                padding: '11px 20px', cursor: 'pointer',
-                                background: activePage === path ? 'rgba(201,168,76,0.12)' : 'transparent',
-                                borderLeft: activePage === path ? '3px solid #c9a84c' : '3px solid transparent',
-                                transition: 'all 0.15s', color: activePage === path ? '#c9a84c' : '#8a7a6a',
-                            }}
-                            onClick={() => {
-                                if (path === 'logout') {
-                                    localStorage.removeItem('adminToken');
-                                    navigate('/admin-secret-login');
-                                    return;
-                                }
-                                if (path === 'admin-profile') { navigate('/admin-profile'); return; }
-                                setActivePage(path);
-                                if (path === 'products') navigate('/adminproducts');
-                                else if (path === 'categories') navigate('/admin-categories');
-                                else if (path === 'orders') navigate('/admin-orders');
-                                else if (path === 'customers') navigate('/admin-customers');
-                                else if (path === 'reviews') navigate('/admin-reviews');
-                            }}
-                            onMouseEnter={e => { if (activePage !== path) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
-                            onMouseLeave={e => { if (activePage !== path) e.currentTarget.style.background = 'transparent'; }}>
-                            <Icon size={17} strokeWidth={1.6} />
-                            <span style={{ fontSize: '13px', fontWeight: 500, letterSpacing: '0.3px', whiteSpace: 'nowrap' }}>{label}</span>
-                            {badge && <span style={{ marginLeft: 'auto', background: '#c9a84c', color: '#0a0a0a', borderRadius: '10px', fontSize: '10px', fontWeight: 700, padding: '1px 7px' }}>{badge}</span>}
-                        </div>
-                    ))}
-                </nav>
-
-                <div style={{ padding: '16px 20px', borderTop: '1px solid #2a1f10', fontSize: '11px', color: '#555', textAlign: 'center' }}>
-                    © 2025 Velnora. All Rights Reserved.
-                </div>
-            </div>
+            <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
             {/* ── MAIN ── */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+            <div className="admin-main-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
 
                 {/* Top Bar */}
                 <div style={{ height: '60px', background: '#0d0a06', borderBottom: '1px solid #2a1f10', display: 'flex', alignItems: 'center', padding: '0 24px', gap: '16px', flexShrink: 0 }}>
-                    <button onClick={() => setSidebarOpen(s => !s)}
+                    <button onClick={() => setSidebarOpen(s => !s)} className="admin-hamburger"
                         style={{ background: 'transparent', border: 'none', color: '#8a7a6a', cursor: 'pointer', padding: '4px' }}>
                         <Menu size={20} />
                     </button>
@@ -479,33 +413,14 @@ export default function AdminProducts() {
                         </div>
 
                         {/* Pagination */}
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderTop: '1px solid #2a1f10', flexWrap: 'wrap', gap: '12px' }}>
-                            <span style={{ fontSize: '12px', color: '#8a7a6a' }}>
-                                Showing {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, filtered.length)} to {Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of {filtered.length} entries
-                            </span>
-                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                                <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
-                                    style={{ width: '30px', height: '30px', background: 'transparent', border: '1px solid #3d3020', borderRadius: '4px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: currentPage === 1 ? 0.4 : 1 }}>
-                                    <ChevronLeft size={14} style={{ color: '#8a7a6a' }} />
-                                </button>
-                                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map(n => (
-                                    <button key={n} onClick={() => setCurrentPage(n)}
-                                        style={{ width: '30px', height: '30px', background: currentPage === n ? '#c9a84c' : 'transparent', border: `1px solid ${currentPage === n ? '#c9a84c' : '#3d3020'}`, borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: currentPage === n ? 700 : 400, color: currentPage === n ? '#0a0a0a' : '#8a7a6a' }}>
-                                        {n}
-                                    </button>
-                                ))}
-                                {totalPages > 5 && <span style={{ color: '#8a7a6a', fontSize: '12px' }}>...</span>}
-                                {totalPages > 5 && (
-                                    <button onClick={() => setCurrentPage(totalPages)}
-                                        style={{ width: '30px', height: '30px', background: currentPage === totalPages ? '#c9a84c' : 'transparent', border: `1px solid ${currentPage === totalPages ? '#c9a84c' : '#3d3020'}`, borderRadius: '4px', cursor: 'pointer', fontSize: '12px', color: currentPage === totalPages ? '#0a0a0a' : '#8a7a6a' }}>
-                                        {totalPages}
-                                    </button>
-                                )}
-                                <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
-                                    style={{ width: '30px', height: '30px', background: 'transparent', border: '1px solid #3d3020', borderRadius: '4px', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: currentPage === totalPages ? 0.4 : 1 }}>
-                                    <ChevronRight size={14} style={{ color: '#8a7a6a' }} />
-                                </button>
-                            </div>
+                        <div style={{ padding: '0 20px' }}>
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={setCurrentPage}
+                                itemsPerPage={itemsPerPage}
+                                onItemsPerPageChange={(val) => { setItemsPerPage(val); setCurrentPage(1); }}
+                            />
                         </div>
                     </div>
                 </div>

@@ -5,6 +5,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import Pagination from '../components/Pagination';
 import { useAlert } from '../context/AlertContext';
 import API_URL from '../config';
 
@@ -19,7 +20,7 @@ export default function ShopPage({ wishlist, setWishlist }) {
   const [sortBy, setSortBy] = useState('Newest First');
   const { showAlert } = useAlert();
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 12;
+  const [itemsPerPage, setItemsPerPage] = useState(12);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const superCategoryFilter = searchParams.get('superCategory') || '';
@@ -143,11 +144,11 @@ export default function ShopPage({ wishlist, setWishlist }) {
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
 
-  const totalPages = Math.ceil(sorted.length / ITEMS_PER_PAGE);
-  const paginatedProducts = sorted.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(sorted.length / itemsPerPage);
+  const paginatedProducts = sorted.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
-<div className="text-white" style={{ fontFamily: "'Segoe UI', system-ui, sans-serif", background: '#0a0a0a', minHeight: '100vh', paddingTop: '130px' }}>
+<div className="text-white" style={{ fontFamily: "'Segoe UI', system-ui, sans-serif", background: '#0a0a0a', minHeight: '100vh', paddingTop: '96px' }}>
       <Navbar wishlistCount={wishlist.length} />
 
         {/* ── HERO BANNER ── */}
@@ -439,40 +440,15 @@ export default function ShopPage({ wishlist, setWishlist }) {
         )}
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="d-flex justify-content-center align-items-center mt-5 gap-2">
-            <button
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="btn fw-semibold"
-              style={{ background: 'transparent', border: '1px solid #3d3020', color: currentPage === 1 ? '#555' : '#c9a84c', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontSize: '13px', padding: '8px 16px' }}>
-              &laquo; PREV
-            </button>
-            <div className="d-flex gap-2 mx-2">
-              {Array.from({ length: totalPages }, (_, i) => (
-                <button
-                  key={i + 1}
-                  onClick={() => setCurrentPage(i + 1)}
-                  className="btn fw-semibold"
-                  style={{
-                    background: currentPage === i + 1 ? '#c9a84c' : 'transparent',
-                    color: currentPage === i + 1 ? '#0a0a0a' : '#8a7a6a',
-                    border: `1px solid ${currentPage === i + 1 ? '#c9a84c' : '#3d3020'}`,
-                    width: '36px', height: '36px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', borderRadius: '4px'
-                  }}>
-                  {i + 1}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="btn fw-semibold"
-              style={{ background: 'transparent', border: '1px solid #3d3020', color: currentPage === totalPages ? '#555' : '#c9a84c', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', fontSize: '13px', padding: '8px 16px' }}>
-              NEXT &raquo;
-            </button>
-          </div>
-        )}
+        <div className="container px-3 px-md-5">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            itemsPerPage={itemsPerPage}
+            onItemsPerPageChange={(val) => { setItemsPerPage(val); setCurrentPage(1); }}
+          />
+        </div>
       </div>
 
       <Footer />
