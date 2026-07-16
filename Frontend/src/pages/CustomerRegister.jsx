@@ -26,7 +26,7 @@ const CustomerRegister = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [focusedField, setFocusedField] = useState('');
-  const [resendTimer, setResendTimer] = useState(60);
+  const [resendTimer, setResendTimer] = useState(120);
 
   const inputStyle = (fieldName) => ({
     backgroundColor: 'rgba(20,20,20,0.8)',
@@ -156,7 +156,7 @@ const CustomerRegister = () => {
   };
 
   const startResendTimer = () => {
-    setResendTimer(60);
+    setResendTimer(120);
     const interval = setInterval(() => {
       setResendTimer((prev) => {
         if (prev <= 1) {
@@ -337,9 +337,9 @@ const CustomerRegister = () => {
 
                   <div className="text-center">
                     {resendTimer > 0 ? (
-                      <p style={{ color: '#888', fontSize: '14px', margin: 0 }}>
-                        Resend OTP in <span style={{ color: '#c9a84c', fontWeight: '600' }}>{resendTimer}s</span>
-                      </p>
+                    <p style={{ color: '#888', fontSize: '14px', margin: 0 }}>
+                      Resend OTP in <span style={{ color: '#c9a84c', fontWeight: '600' }}>{Math.floor(resendTimer / 60)}:{String(resendTimer % 60).padStart(2, '0')}</span>
+                    </p>
                     ) : (
                       <button onClick={handleResendOtp} style={{
                         background: 'none', border: 'none', color: '#c9a84c', fontSize: '14px',

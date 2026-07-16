@@ -150,7 +150,10 @@ const registerCustomer = async (req, res) => {
       });
     }
 
-    await sendRegistrationOtpEmail(email.toLowerCase(), otp, firstName);
+    // Send email non-blocking — don't fail registration if email fails
+    sendRegistrationOtpEmail(email.toLowerCase(), otp, firstName).catch(err => {
+      console.error('[REG OTP EMAIL] Failed:', err.message || err);
+    });
 
     res.status(200).json({ success: true, message: `OTP sent to ${email}. Please verify to complete registration.` });
   } catch (error) {

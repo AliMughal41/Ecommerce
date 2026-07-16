@@ -16,7 +16,10 @@ const sendEmail = async ({ to, subject, html, from, replyTo }) => {
 
   if (replyTo) params.reply_to = replyTo;
 
-  return resend.emails.send(params);
+  console.log('[RESEND] Sending email:', { to: params.to, subject: params.subject, from: params.from });
+  const result = await resend.emails.send(params);
+  console.log('[RESEND] Email sent successfully:', result?.data?.id || 'ok');
+  return result;
 };
 
 module.exports = { sendEmail, FROM_EMAIL };
