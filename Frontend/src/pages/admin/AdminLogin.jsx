@@ -95,6 +95,17 @@ export default function AdminLogin() {
           </button>
         </form>
 
+        {/* Forgot password link */}
+        <div style={{ textAlign: 'center', marginTop: '16px' }}>
+          <button onClick={() => navigate('/admin-forgot-password')}
+            style={{ background: 'transparent', border: 'none', color: '#8a7a6a', fontSize: '13px', cursor: 'pointer' }}
+            onMouseEnter={(e) => e.currentTarget.style.color = '#c9a84c'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#8a7a6a'}
+          >
+            Forgot Password?
+          </button>
+        </div>
+
         {/* Register link */}
         <div style={{ textAlign: 'center', marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #1a1410' }}>
           <span style={{ fontSize: '13px', color: '#6a5a4a' }}>New admin? </span>

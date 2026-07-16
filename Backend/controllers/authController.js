@@ -365,3 +365,142 @@ exports.updateAdmin = async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to update admin.' });
   }
 };
+
+// ─── Send Password Reset OTP Email ───────────────────────────────────────────
+const sendPasswordResetOtpEmail = async (email, otp, username) => {
+  const safeName = escapeHtml(username);
+  await sendEmail({
+    to: email,
+    subject: 'Velnora Admin – Password Reset OTP',
+    html: `
+      <div style="font-family: 'Segoe UI', sans-serif; background:#0a0a0a; padding: 40px; max-width: 500px; margin: auto; border-radius: 8px; border: 1px solid #3d3020;">
+        <div style="text-align:center; margin-bottom: 28px;">
+          <h1 style="color:#c9a84c; font-size: 28px; letter-spacing: 4px; margin: 0;">VELNORA</h1>
+          <p style="color:#8a7a6a; font-size: 12px; letter-spacing: 2px; margin: 4px 0 0;">ADMIN PORTAL</p>
+        </div>
+        <h2 style="color:#ffffff; font-size: 18px; margin-bottom: 8px;">Hello, ${safeName}!</h2>
+        <p style="color:#a09080; font-size: 14px; line-height: 1.7; margin-bottom: 28px;">
+          You requested to reset your admin password on Velnora. Use the OTP below to verify your identity. This code expires in <strong style="color:#c9a84c;">15 minutes</strong>.
+        </p>
+        <div style="background:#1a1410; border: 1px solid #3d3020; border-radius: 6px; padding: 24px; text-align: center; margin-bottom: 28px;">
+          <p style="color:#8a7a6a; font-size: 12px; letter-spacing: 2px; margin: 0 0 12px;">YOUR RESET CODE</p>
+          <div style="font-size: 42px; font-weight: 900; letter-spacing: 14px; color: #c9a84c; font-family: monospace;">${otp}</div>
+        </div>
+        <p style="color:#555; font-size: 12px; text-align: center;">If you did not request this, please ignore this email.</p>
+      </div>
+    `,
+  });
+};
+
+// ─── Forgot Password Admin (Step 1: Send OTP) ───────────────────────────────
+exports.forgotPasswordAdmin = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Please provide your email address.' });
+    }
+
+    const admin = await Admin.findOne({ email: email.toLowerCase(), isVerified: true }).select('+otp +otpExpiry');
+
+    if (!admin) {
+      return res.status(200).json({ success: true, message: 'If an account exists with that email, an OTP has been sent.' });
+    }
+
+    const otp = generateOtp();
+    const otpExpiry = new Date(Date.now() + 15 * 60 * 1000);
+
+    admin.otp = otp;
+    admin.otpExpiry = otpExpiry;
+    await admin.save();
+
+    try {
+      await sendPasswordResetOtpEmail(email.toLowerCase(), otp, admin.username);
+      console.log('[ADMIN FORGOT] OTP email sent to:', email);
+    } catch (emailErr) {
+      console.error('[ADMIN FORGOT] Email send failed:', emailErr.message);
+    }
+
+    res.status(200).json({ success: true, message: 'If an account exists with that email, an OTP has been sent.' });
+  } catch (error) {
+    console.error('Admin forgot password error:', error.message);
+    res.status(500).json({ success: false, message: 'Password reset failed. Please try again.' });
+  }
+};
+
+// ─── Verify Reset OTP Admin (Step 2) ────────────────────────────────────────
+exports.verifyResetOtpAdmin = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, message: 'Email and OTP are required.' });
+    }
+
+    const admin = await Admin.findOne({ email: email.toLowerCase(), isVerified: true }).select('+otp +otpExpiry');
+    if (!admin) {
+      return res.status(404).json({ success: false, message: 'No account found with this email.' });
+    }
+
+    const otpBuffer = Buffer.from(admin.otp || '', 'utf8');
+    const inputBuffer = Buffer.from(String(otp), 'utf8');
+    if (otpBuffer.length !== inputBuffer.length || !crypto.timingSafeEqual(otpBuffer, inputBuffer)) {
+      return res.status(400).json({ success: false, message: 'Invalid OTP. Please try again.' });
+    }
+
+    if (admin.otpExpiry < new Date()) {
+      return res.status(400).json({ success: false, message: 'OTP has expired. Please request a new one.' });
+    }
+
+    const jwt = require('jsonwebtoken');
+    const resetToken = jwt.sign({ id: admin._id, purpose: 'admin-password-reset' }, process.env.JWT_SECRET_KEY, { expiresIn: '10m' });
+
+    res.status(200).json({ success: true, resetToken });
+  } catch (error) {
+    console.error('Admin verify reset OTP error:', error.message);
+    res.status(500).json({ success: false, message: 'OTP verification failed.' });
+  }
+};
+
+// ─── Reset Password Admin (Step 3) ──────────────────────────────────────────
+exports.resetPasswordAdmin = async (req, res) => {
+  try {
+    const { resetToken, newPassword, confirmPassword } = req.body;
+    if (!resetToken || !newPassword || !confirmPassword) {
+      return res.status(400).json({ success: false, message: 'Reset token, new password, and confirm password are required.' });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 8 characters.' });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ success: false, message: 'Passwords do not match.' });
+    }
+
+    const jwt = require('jsonwebtoken');
+    let decoded;
+    try {
+      decoded = jwt.verify(resetToken, process.env.JWT_SECRET_KEY);
+    } catch (err) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired reset token.' });
+    }
+
+    if (decoded.purpose !== 'admin-password-reset') {
+      return res.status(400).json({ success: false, message: 'Invalid reset token.' });
+    }
+
+    const admin = await Admin.findById(decoded.id).select('+otp +otpExpiry');
+    if (!admin) {
+      return res.status(404).json({ success: false, message: 'Admin not found.' });
+    }
+
+    admin.password = newPassword;
+    admin.otp = undefined;
+    admin.otpExpiry = undefined;
+    await admin.save();
+
+    res.status(200).json({ success: true, message: 'Password reset successful. You can now log in.' });
+  } catch (error) {
+    console.error('Admin reset password error:', error.message);
+    res.status(500).json({ success: false, message: 'Password reset failed. Please try again.' });
+  }
+};

@@ -19,6 +19,7 @@ import AdminLogin from './pages/admin/AdminLogin.jsx'
 import AdminCategories from './pages/admin/AdminCategories'
 import AdminRegister from './pages/admin/AdminRegister.jsx'
 import AdminVerifyOtp from './pages/admin/AdminVerifyOtp.jsx'
+import AdminForgotPassword from './pages/admin/AdminForgotPassword.jsx'
 import AdminOrders from './pages/admin/AdminOrders.jsx'
 import AdminCustomers from './pages/admin/AdminCustomers.jsx'
 import AdminReviews from './pages/admin/AdminReviews.jsx'
@@ -153,6 +154,7 @@ function App() {
         } />
         <Route path="/admin-register" element={<AdminRegister />} />
         <Route path="/admin-verify-otp" element={<AdminVerifyOtp />} />
+        <Route path="/admin-forgot-password" element={<AdminForgotPassword />} />
         <Route path="/admin-orders" element={
           <ProtectedRoute>
             <AdminOrders />

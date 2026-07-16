@@ -1,12 +1,15 @@
 const express = require('express');
 const router = express.Router();
 
-const { loginAdmin, logout, registerAdmin, verifyOtp, verifyAdminToken, getAdminProfile, updateAdminProfile, changeAdminPassword, getAllAdmins, deleteAdmin, updateAdmin } = require('../controllers/authController');
+const { loginAdmin, logout, registerAdmin, verifyOtp, verifyAdminToken, getAdminProfile, updateAdminProfile, changeAdminPassword, getAllAdmins, deleteAdmin, updateAdmin, forgotPasswordAdmin, verifyResetOtpAdmin, resetPasswordAdmin } = require('../controllers/authController');
 const { verifyAdmin } = require('../middleware/auth');
 
 router.post('/login', loginAdmin);
 router.post('/register', registerAdmin);
 router.post('/verify-otp', verifyOtp);
+router.post('/forgot-password', forgotPasswordAdmin);
+router.post('/verify-reset-otp', verifyResetOtpAdmin);
+router.post('/reset-password', resetPasswordAdmin);
 router.post('/logout', logout);
 router.get('/verify-token', verifyAdminToken);
 router.get('/profile', verifyAdmin, getAdminProfile);
