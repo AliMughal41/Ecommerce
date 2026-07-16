@@ -54,6 +54,15 @@ const CustomerAuthProvider = ({ children }) => {
   const register = async (formData) => {
     try {
       const { data } = await axios.post(`${API}/customer/register`, formData);
+      return data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Something went wrong');
+    }
+  };
+
+  const verifyRegistration = async (email, otp) => {
+    try {
+      const { data } = await axios.post(`${API}/customer/verify-registration`, { email, otp });
       localStorage.setItem('customerToken', data.token);
       setToken(data.token);
       await fetchProfile(data.token);
@@ -139,6 +148,7 @@ const CustomerAuthProvider = ({ children }) => {
         loading,
         login,
         register,
+        verifyRegistration,
         logout,
         updateProfile,
         changePassword,

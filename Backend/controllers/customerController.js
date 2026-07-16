@@ -39,6 +39,32 @@ const sendOtpEmail = async (email, otp) => {
   });
 };
 
+// ─── Send Registration OTP Email ──────────────────────────────────────────────
+const sendRegistrationOtpEmail = async (email, otp, firstName) => {
+  const safeName = escapeHtml(firstName);
+  await sendEmail({
+    to: email,
+    subject: 'Verify Your Email — Velnora',
+    html: `
+      <div style="font-family: 'Segoe UI', sans-serif; background:#0a0a0a; padding: 40px; max-width: 500px; margin: auto; border-radius: 8px; border: 1px solid #3d3020;">
+        <div style="text-align:center; margin-bottom: 28px;">
+          <h1 style="color:#c9a84c; font-size: 28px; letter-spacing: 4px; margin: 0;">VELNORA</h1>
+          <p style="color:#8a7a6a; font-size: 12px; letter-spacing: 2px; margin: 4px 0 0;">EMAIL VERIFICATION</p>
+        </div>
+        <h2 style="color:#ffffff; font-size: 18px; margin-bottom: 8px;">Hello, ${safeName}!</h2>
+        <p style="color:#a09080; font-size: 14px; line-height: 1.7; margin-bottom: 28px;">
+          Welcome to Velnora! Use the OTP below to verify your email address and complete your registration. This code expires in <strong style="color:#c9a84c;">10 minutes</strong>.
+        </p>
+        <div style="background:#1a1410; border: 1px solid #3d3020; border-radius: 6px; padding: 24px; text-align: center; margin-bottom: 28px;">
+          <p style="color:#8a7a6a; font-size: 12px; letter-spacing: 2px; margin: 0 0 12px;">YOUR VERIFICATION CODE</p>
+          <div style="font-size: 42px; font-weight: 900; letter-spacing: 14px; color: #c9a84c; font-family: monospace;">${otp}</div>
+        </div>
+        <p style="color:#555; font-size: 12px; text-align: center;">If you did not create an account, please ignore this email.</p>
+      </div>
+    `,
+  });
+};
+
 // ─── Cookie Options ──────────────────────────────────────────────────────────
 const getCookieOptions = () => {
   const days = parseInt(process.env.COOKIE_EXPIRE) || 7;
@@ -72,17 +98,17 @@ const sendToken = (customer, statusCode, res) => {
   });
 };
 
-// ─── Register Customer ──────────────────────────────────────────────────────
+// ─── Register Customer (Step 1: Send OTP) ──────────────────────────────────
 const registerCustomer = async (req, res) => {
   try {
-    const { firstName, lastName, email, password, confirmPassword } = req.body;
+    const { firstName, lastName, email, phone, password, confirmPassword } = req.body;
 
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
       return res.status(400).json({ success: false, message: 'Please fill in all fields.' });
     }
 
-    if (password.length < 8) {
-      return res.status(400).json({ success: false, message: 'Password must be at least 8 characters.' });
+    if (password.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters.' });
     }
 
     if (password !== confirmPassword) {
@@ -94,22 +120,78 @@ const registerCustomer = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Please provide a valid email.' });
     }
 
-    const existingCustomer = await Customer.findOne({ email: email.toLowerCase() });
+    const existingCustomer = await Customer.findOne({ email: email.toLowerCase(), isVerified: true });
     if (existingCustomer) {
       return res.status(400).json({ success: false, message: 'A customer with this email already exists.' });
     }
 
-    const customer = await Customer.create({
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      email: email.toLowerCase().trim(),
-      password,
-    });
+    const otp = generateOtp();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
-    sendToken(customer, 201, res);
+    let customer = await Customer.findOne({ email: email.toLowerCase(), isVerified: false }).select('+otp +otpExpiry');
+    if (customer) {
+      customer.firstName = firstName.trim();
+      customer.lastName = lastName.trim();
+      customer.phone = phone || '';
+      customer.password = password;
+      customer.otp = otp;
+      customer.otpExpiry = otpExpiry;
+      await customer.save();
+    } else {
+      customer = await Customer.create({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: email.toLowerCase().trim(),
+        phone: phone || '',
+        password,
+        otp,
+        otpExpiry,
+        isVerified: false,
+      });
+    }
+
+    await sendRegistrationOtpEmail(email.toLowerCase(), otp, firstName);
+
+    res.status(200).json({ success: true, message: `OTP sent to ${email}. Please verify to complete registration.` });
   } catch (error) {
     console.error('Customer registration error:', error.message);
     res.status(500).json({ success: false, message: 'Registration failed. Please try again.' });
+  }
+};
+
+// ─── Verify Registration OTP (Step 2: Complete Registration) ─────────────────
+const verifyRegistrationOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, message: 'Email and OTP are required.' });
+    }
+
+    const customer = await Customer.findOne({ email: email.toLowerCase(), isVerified: false }).select('+otp +otpExpiry +password');
+    if (!customer) {
+      return res.status(404).json({ success: false, message: 'No pending registration found for this email.' });
+    }
+
+    const otpBuffer = Buffer.from(customer.otp || '', 'utf8');
+    const inputBuffer = Buffer.from(String(otp), 'utf8');
+    if (otpBuffer.length !== inputBuffer.length || !crypto.timingSafeEqual(otpBuffer, inputBuffer)) {
+      return res.status(400).json({ success: false, message: 'Invalid OTP. Please try again.' });
+    }
+
+    if (customer.otpExpiry < new Date()) {
+      return res.status(400).json({ success: false, message: 'OTP has expired. Please register again.' });
+    }
+
+    customer.isVerified = true;
+    customer.otp = undefined;
+    customer.otpExpiry = undefined;
+    await customer.save();
+
+    sendToken(customer, 201, res);
+  } catch (error) {
+    console.error('Registration OTP verification error:', error.message);
+    res.status(500).json({ success: false, message: 'Verification failed. Please try again.' });
   }
 };
 
@@ -374,6 +456,7 @@ const isAuthenticatedCustomer = async (req, res, next) => {
 
 module.exports = {
   registerCustomer,
+  verifyRegistrationOtp,
   loginCustomer,
   logoutCustomer,
   getCustomerProfile,

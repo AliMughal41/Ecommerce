@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   registerCustomer,
+  verifyRegistrationOtp,
   loginCustomer,
   logoutCustomer,
   getCustomerProfile,
@@ -15,6 +16,7 @@ const { verifyCustomer } = require('../middleware/auth');
 
 // Public routes
 router.post('/register', registerCustomer);
+router.post('/verify-registration', verifyRegistrationOtp);
 router.post('/login', loginCustomer);
 router.post('/forgot-password', forgotPassword);
 router.post('/verify-reset-otp', verifyResetOtp);

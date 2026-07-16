@@ -56,7 +56,7 @@ export default function SubscribeSection({ title, subtitle, buttonText = 'SUBSCR
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="form-control bg-transparent text-white border-0 flex-grow-1"
+                className="form-control bg-transparent text-white border-0 flex-grow-1 subscribe-input"
                 style={{ fontSize: '14px', outline: 'none', boxShadow: 'none', padding: '13px 16px', borderRadius: 0 }}
               />
               <button

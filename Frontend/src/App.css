@@ -517,3 +517,9 @@ body.menu-open {
     width: auto !important;
   }
 }
+
+/* Subscribe input placeholder */
+.subscribe-input::placeholder {
+  color: #a09080 !important;
+  opacity: 1 !important;
+}
