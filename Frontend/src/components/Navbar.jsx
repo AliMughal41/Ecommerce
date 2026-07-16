@@ -37,6 +37,10 @@ export default function Navbar() {
     const [notifLoading, setNotifLoading] = useState(null);
     const [selectedNotif, setSelectedNotif] = useState(null);
     const [selectedAdminNotif, setSelectedAdminNotif] = useState(null);
+    const [showSearch, setShowSearch] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [searchLoading, setSearchLoading] = useState(false);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -216,6 +220,25 @@ export default function Navbar() {
 
     const unreadCount = notifications.filter(n => !n.isRead).length;
 
+    const handleSearch = async (query) => {
+        setSearchQuery(query);
+        if (!query.trim()) {
+            setSearchResults([]);
+            return;
+        }
+        setSearchLoading(true);
+        try {
+            const { data } = await axios.get(`${API_URL}/api/products/search?q=${encodeURIComponent(query.trim())}`);
+            if (data.success) {
+                setSearchResults(data.products);
+            }
+        } catch (error) {
+            console.error('Search error', error);
+        } finally {
+            setSearchLoading(false);
+        }
+    };
+
     return (
         <>
             {/* Navbar - FIXED at top */}
@@ -328,7 +351,86 @@ export default function Navbar() {
                                 animation: 'spin 15s linear infinite reverse',
                                 pointerEvents: 'none'
                             }}></div>
-                            <style>{`
+            {/* ── SEARCH OVERLAY ── */}
+            {showSearch && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+                    background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)',
+                    zIndex: 10000, display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', paddingTop: '10vh',
+                    animation: 'notifModalFadeIn 0.2s ease-out'
+                }} onClick={() => { setShowSearch(false); setSearchQuery(''); setSearchResults([]); }}>
+                    <div style={{ width: '90%', maxWidth: '600px' }} onClick={e => e.stopPropagation()}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                            <div style={{ flex: 1, position: 'relative' }}>
+                                <Search size={20} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#8a7a6a' }} />
+                                <input
+                                    autoFocus
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={e => handleSearch(e.target.value)}
+                                    placeholder="Search products by name, category, price..."
+                                    style={{
+                                        width: '100%', background: '#141010', border: '1px solid #3d3020',
+                                        borderRadius: '8px', color: '#fff', padding: '16px 16px 16px 48px',
+                                        fontSize: '16px', outline: 'none',
+                                    }}
+                                    onFocus={e => e.target.style.borderColor = '#c9a84c'}
+                                    onBlur={e => e.target.style.borderColor = '#3d3020'}
+                                />
+                            </div>
+                            <button onClick={() => { setShowSearch(false); setSearchQuery(''); setSearchResults([]); }}
+                                style={{ background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: '8px', width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, transition: 'all 0.2s' }}
+                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(201,168,76,0.2)'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'rgba(201,168,76,0.1)'}
+                            >
+                                <X size={20} style={{ color: '#c9a84c' }} />
+                            </button>
+                        </div>
+
+                        {searchLoading && (
+                            <div style={{ textAlign: 'center', padding: '30px', color: '#8a7a6a', fontSize: '13px' }}>
+                                <Loader2 size={20} style={{ animation: 'spin 1s linear infinite', color: '#c9a84c', marginBottom: '8px' }} />
+                                <div>Searching...</div>
+                            </div>
+                        )}
+
+                        {!searchLoading && searchQuery && searchResults.length === 0 && (
+                            <div style={{ textAlign: 'center', padding: '40px', color: '#8a7a6a', fontSize: '14px' }}>
+                                No products found for "{searchQuery}"
+                            </div>
+                        )}
+
+                        {!searchLoading && searchResults.length > 0 && (
+                            <div style={{ maxHeight: '50vh', overflowY: 'auto', borderRadius: '8px', border: '1px solid #3d3020', background: '#141010' }}>
+                                {searchResults.map(p => (
+                                    <div key={p._id}
+                                        onClick={() => { setShowSearch(false); setSearchQuery(''); setSearchResults([]); navigate(`/product/${p._id}`); }}
+                                        style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderBottom: '1px solid #2a1f10', cursor: 'pointer', transition: 'background 0.15s' }}
+                                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(201,168,76,0.06)'}
+                                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                    >
+                                        <img src={p.mainImage} alt={p.name} style={{ width: '48px', height: '48px', borderRadius: '6px', objectFit: 'cover', border: '1px solid #3d3020', flexShrink: 0 }} />
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div style={{ color: '#fff', fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
+                                            <div style={{ color: '#8a7a6a', fontSize: '11px', marginTop: '2px' }}>{p.category}</div>
+                                        </div>
+                                        <div style={{ color: '#c9a84c', fontSize: '13px', fontWeight: 700, flexShrink: 0 }}>Rs. {(p.salePrice || p.price).toLocaleString()}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {!searchLoading && !searchQuery && (
+                            <div style={{ textAlign: 'center', padding: '40px', color: '#555', fontSize: '13px' }}>
+                                Type to search products...
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            <style>{`
                                 @keyframes spin {
                                     0% { transform: rotate(0deg); }
                                     100% { transform: rotate(360deg); }
@@ -433,6 +535,7 @@ export default function Navbar() {
                                     borderRadius: '6px',
                                     transition: 'all 0.3s ease'
                                 }}
+                                onClick={() => setShowSearch(true)}
                                 onMouseEnter={e => {
                                     e.currentTarget.style.background = 'rgba(212,175,55,0.08)';
                                     e.currentTarget.style.transform = 'translateY(-2px)';

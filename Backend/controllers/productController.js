@@ -75,6 +75,31 @@ exports.getProducts = async (req, res) => {
   }
 };
 
+exports.searchProducts = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || !q.trim()) {
+      return res.status(200).json({ success: true, products: [] });
+    }
+    const regex = new RegExp(q.trim(), 'i');
+    const products = await Product.find({
+      $or: [
+        { name: regex },
+        { category: regex },
+        { price: isNaN(Number(q)) ? undefined : Number(q) },
+      ],
+    }).sort({ createdAt: -1 }).limit(20);
+    const filtered = products.filter(p => {
+      if (isNaN(Number(q))) return true;
+      return true;
+    });
+    res.status(200).json({ success: true, products: filtered });
+  } catch (error) {
+    console.error('Search products error:', error.message);
+    res.status(500).json({ success: false, message: 'Search failed.' });
+  }
+};
+
 exports.getSingleProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);

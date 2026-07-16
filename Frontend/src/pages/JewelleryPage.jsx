@@ -278,7 +278,7 @@ export default function JewelleryPage({ wishlist, setWishlist }) {
                   </div>
                   <div className="p-3 text-center" style={{ background: '#141010' }} onClick={() => navigate(`/product/${getProductId(p)}`)}>
                     <div className="text-white fw-bold mb-1" style={{ fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
-                    <div className="mb-2" style={{ fontSize: '12px', color: '#8a8a8a' }}>Category: {p.category}</div>
+                    <div className="mb-2" style={{ fontSize: '12px', color: '#c9a84c', letterSpacing: '0.5px' }}>Click to view details</div>
                     <div className="d-flex align-items-center justify-content-center gap-1 mb-2">
                       {[1, 2, 3, 4, 5].map(s => <Star key={s} size={12} fill={s <= Math.round(p.rating || 4) ? '#c9a84c' : 'none'} color="#c9a84c" />)}
                     </div>
