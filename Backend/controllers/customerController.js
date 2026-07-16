@@ -101,6 +101,7 @@ const sendToken = (customer, statusCode, res) => {
 // ─── Register Customer (Step 1: Send OTP) ──────────────────────────────────
 const registerCustomer = async (req, res) => {
   try {
+    console.log('[REGISTER] Request body:', { firstName: req.body.firstName, lastName: req.body.lastName, email: req.body.email, hasPassword: !!req.body.password, hasConfirm: !!req.body.confirmPassword });
     const { firstName, lastName, email, phone, password, confirmPassword } = req.body;
 
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
@@ -150,14 +151,17 @@ const registerCustomer = async (req, res) => {
       });
     }
 
-    // Send email non-blocking — don't fail registration if email fails
-    sendRegistrationOtpEmail(email.toLowerCase(), otp, firstName).catch(err => {
-      console.error('[REG OTP EMAIL] Failed:', err.message || err);
-      if (err.response) console.error('[REG OTP EMAIL] Response:', JSON.stringify(err.response));
-      if (err.cause) console.error('[REG OTP EMAIL] Cause:', err.cause);
-    });
+    // Send email
+    try {
+      await sendRegistrationOtpEmail(email.toLowerCase(), otp, firstName);
+      console.log('[REGISTER] OTP email sent successfully to:', email.toLowerCase());
+    } catch (emailErr) {
+      console.error('[REG OTP EMAIL] Failed:', emailErr.message || emailErr);
+      if (emailErr.response) console.error('[REG OTP EMAIL] Response:', JSON.stringify(emailErr.response));
+      if (emailErr.cause) console.error('[REG OTP EMAIL] Cause:', emailErr.cause);
+    }
 
-    console.log('[REGISTER] Customer saved, OTP generated. Email send triggered for:', email.toLowerCase());
+    console.log('[REGISTER] Customer saved, OTP generated for:', email.toLowerCase());
     res.status(200).json({ success: true, message: `OTP sent to ${email}. Please verify to complete registration.` });
   } catch (error) {
     console.error('Customer registration error:', error.message);
