@@ -26,6 +26,10 @@ import AdminReviews from './pages/admin/AdminReviews.jsx'
 import AdminSuperCategories from './pages/admin/AdminSuperCategories.jsx'
 import AdminProfile from './pages/admin/AdminProfile.jsx'
 import AdminDashboard from './pages/admin/AdminDashboard.jsx'
+import AdminReports from './pages/admin/AdminReports.jsx'
+import AdminReturns from './pages/admin/AdminReturns.jsx'
+import AdminCreateReturn from './pages/admin/AdminCreateReturn.jsx'
+import AdminDeliveredOrders from './pages/admin/AdminDeliveredOrders.jsx'
 import NotFoundPage from './pages/NotFoundPage.jsx'
 
 import CustomerAuthProvider from './context/CustomerAuthContext'
@@ -158,6 +162,26 @@ function App() {
         <Route path="/admin-orders" element={
           <ProtectedRoute>
             <AdminOrders />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin-reports" element={
+          <ProtectedRoute>
+            <AdminReports />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin-returns" element={
+          <ProtectedRoute>
+            <AdminReturns />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin-create-return" element={
+          <ProtectedRoute>
+            <AdminCreateReturn />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin-delivered-orders" element={
+          <ProtectedRoute>
+            <AdminDeliveredOrders />
           </ProtectedRoute>
         } />
         <Route path="/admin-customers" element={

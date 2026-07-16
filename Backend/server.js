@@ -137,6 +137,9 @@ const customerNotificationRoutes = require('./routes/customerNotificationRoutes'
 const customerRoutes = require('./routes/customerRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const superCategoryRoutes = require('./routes/superCategoryRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
+const returnRoutes = require('./routes/returnRoutes');
+const deliveredOrderRoutes = require('./routes/deliveredOrderRoutes');
 
 // ─── Use Routes ────────────────────────────────────────────────────────────
 app.use('/api/auth', authLimiter, authRoutes);
@@ -152,6 +155,9 @@ app.use('/api/customer-notifications', customerNotificationRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/super-categories', superCategoryRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/returns', returnRoutes);
+app.use('/api/delivered-orders', deliveredOrderRoutes);
 
 // ─── Health Check ──────────────────────────────────────────────────────────
 app.get('/', (req, res) => {

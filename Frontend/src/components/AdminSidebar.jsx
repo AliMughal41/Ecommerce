@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Package, Tag, Layers, ShoppingCart, Users,
-  Star, UserCog, LogOut, X, ChevronRight
+  Star, UserCog, LogOut, X, ChevronRight, BarChart3, RotateCcw, PlusCircle, PackageCheck
 } from 'lucide-react';
 
 const SIDEBAR_WIDTH = 260;
@@ -14,7 +14,10 @@ const sidebarLinks = [
   { icon: Layers, label: 'Super Categories', path: '/admin-super-categories' },
   { icon: ShoppingCart, label: 'Orders', path: '/admin-orders' },
   { icon: Users, label: 'Customers', path: '/admin-customers' },
+  { icon: RotateCcw, label: 'Returns', path: '/admin-returns' },
+  { icon: PackageCheck, label: 'Delivered Orders', path: '/admin-delivered-orders' },
   { icon: Star, label: 'Reviews', path: '/admin-reviews' },
+  { icon: BarChart3, label: 'Reports & Analytics', path: '/admin-reports' },
   { icon: UserCog, label: 'Admin Profile', path: '/admin-profile' },
 ];
 

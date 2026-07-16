@@ -385,7 +385,8 @@ export default function CheckoutPage() {
                                                 <div style={{ color: '#8a7a6a', fontSize: '12px' }}>{item.detail}</div>
                                                 <div className="d-flex align-items-center gap-0 mt-1" style={{ border: '1px solid #3d3020', borderRadius: '3px', overflow: 'hidden', width: 'fit-content' }}>
                                                     <button className="border-0 d-flex align-items-center justify-content-center"
-                                                        style={{ width: '26px', height: '26px', background: '#1a1410', color: '#c9a84c', cursor: 'pointer', fontSize: '14px' }}
+                                                        style={{ width: '26px', height: '26px', background: '#1a1410', color: currentStep > 1 ? '#555' : '#c9a84c', cursor: currentStep > 1 ? 'not-allowed' : 'pointer', fontSize: '14px' }}
+                                                        disabled={currentStep > 1}
                                                         onClick={() => updateQty(item.id, -1)}>
                                                         <Minus size={10} />
                                                     </button>
@@ -393,7 +394,8 @@ export default function CheckoutPage() {
                                                         {item.qty || 1}
                                                     </span>
                                                     <button className="border-0 d-flex align-items-center justify-content-center"
-                                                        style={{ width: '26px', height: '26px', background: '#1a1410', color: item.stock && (item.qty || 1) >= item.stock ? '#555' : '#c9a84c', cursor: item.stock && (item.qty || 1) >= item.stock ? 'not-allowed' : 'pointer', fontSize: '14px' }}
+                                                        style={{ width: '26px', height: '26px', background: '#1a1410', color: (currentStep > 1 || (item.stock && (item.qty || 1) >= item.stock)) ? '#555' : '#c9a84c', cursor: (currentStep > 1 || (item.stock && (item.qty || 1) >= item.stock)) ? 'not-allowed' : 'pointer', fontSize: '14px' }}
+                                                        disabled={currentStep > 1}
                                                         onClick={() => updateQty(item.id, 1)}>
                                                         <Plus size={10} />
                                                     </button>

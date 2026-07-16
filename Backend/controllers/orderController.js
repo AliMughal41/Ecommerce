@@ -3,6 +3,7 @@ const Product = require('../models/Product');
 const Customer = require('../models/Customer');
 const CustomerNotification = require('../models/CustomerNotification');
 const Notification = require('../models/Notification');
+const DeliveredOrder = require('../models/DeliveredOrder');
 const { sendEmail } = require('../config/resend');
 
 // ─── XSS Protection: Escape HTML entities ────────────────────────────────────
@@ -320,7 +321,11 @@ exports.createOrder = async (req, res) => {
 
 exports.getOrders = async (req, res) => {
   try {
-    const orders = await Order.find().sort({ createdAt: -1 });
+    const orders = await Order.aggregate([
+      { $addFields: { sortOrder: { $cond: [{ $eq: ['$status', 'Delivered'] }, 1, 0] } } },
+      { $sort: { sortOrder: 1, createdAt: -1 } },
+      { $project: { sortOrder: 0 } },
+    ]);
     res.status(200).json({ success: true, count: orders.length, orders });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to fetch orders.' });
@@ -368,6 +373,27 @@ exports.updateOrderStatus = async (req, res) => {
       order.trackingId = trackingId.trim();
     }
     await order.save();
+
+    // ─── Auto-save to DeliveredOrder collection (permanent record) ────
+    if (status === 'Delivered') {
+      try {
+        await DeliveredOrder.create({
+          originalOrderNumber: order.orderNumber,
+          customerRef: order.customerRef || null,
+          isGuest: order.isGuest,
+          customer: order.customer,
+          items: order.items,
+          subtotal: order.subtotal,
+          shippingFee: order.shippingFee,
+          total: order.total,
+          trackingId: order.trackingId,
+          deliveredAt: new Date(),
+          originalCreatedAt: order.createdAt,
+        });
+      } catch (deliveredErr) {
+        console.error('Failed to save delivered order:', deliveredErr.message);
+      }
+    }
 
     if (oldStatus !== 'Cancelled' && status === 'Cancelled') {
       for (const item of order.items) {
