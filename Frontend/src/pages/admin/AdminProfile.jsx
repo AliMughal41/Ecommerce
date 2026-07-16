@@ -29,6 +29,8 @@ export default function AdminProfile() {
 
     const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
     const [deleteTarget, setDeleteTarget] = useState(null);
+    const [editTarget, setEditTarget] = useState(null);
+    const [editForm, setEditForm] = useState({ username: '', email: '' });
 
     const token = localStorage.getItem('adminToken');
     const authConfig = { headers: { Authorization: `Bearer ${token}` } };
@@ -118,6 +120,23 @@ export default function AdminProfile() {
             }
         } catch (error) {
             showAlert({ type: 'error', message: error.response?.data?.message || 'Failed to delete admin.' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleEditAdmin = async () => {
+        if (!editTarget || !editForm.username.trim() || !editForm.email.trim()) return;
+        setLoading(true);
+        try {
+            const { data } = await axios.put(`${API_URL}/api/auth/admins/${editTarget._id}`, editForm, authConfig);
+            if (data.success) {
+                showAlert({ type: 'success', message: 'Admin updated successfully.' });
+                setAdmins(prev => prev.map(a => a._id === editTarget._id ? { ...a, username: data.admin.username, email: data.admin.email } : a));
+                setEditTarget(null);
+            }
+        } catch (error) {
+            showAlert({ type: 'error', message: error.response?.data?.message || 'Failed to update admin.' });
         } finally {
             setLoading(false);
         }
@@ -316,19 +335,36 @@ export default function AdminProfile() {
                                                         <td style={{ padding: '12px 14px' }}>
                                                             <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                                                                 {!isMe && myRole === 'founder' && (
-                                                                    <button
-                                                                        onClick={() => setDeleteTarget(a)}
-                                                                        style={{
-                                                                            width: '30px', height: '30px', background: 'transparent',
-                                                                            border: '1px solid #3d3020', borderRadius: '4px', cursor: 'pointer',
-                                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                            transition: 'border-color 0.15s'
-                                                                        }}
-                                                                        onMouseEnter={e => e.currentTarget.style.borderColor = '#e74c3c'}
-                                                                        onMouseLeave={e => e.currentTarget.style.borderColor = '#3d3020'}
-                                                                    >
-                                                                        <Trash2 size={13} style={{ color: '#e74c3c' }} />
-                                                                    </button>
+                                                                    <>
+                                                                        <button
+                                                                            onClick={() => { setEditTarget(a); setEditForm({ username: a.username, email: a.email }); }}
+                                                                            style={{
+                                                                                width: '30px', height: '30px', background: 'transparent',
+                                                                                border: '1px solid #3d3020', borderRadius: '4px', cursor: 'pointer',
+                                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                                transition: 'border-color 0.15s'
+                                                                            }}
+                                                                            onMouseEnter={e => e.currentTarget.style.borderColor = '#c9a84c'}
+                                                                            onMouseLeave={e => e.currentTarget.style.borderColor = '#3d3020'}
+                                                                            title="Edit admin"
+                                                                        >
+                                                                            <span style={{ color: '#c9a84c', fontSize: '13px', fontWeight: 700 }}>E</span>
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => setDeleteTarget(a)}
+                                                                            style={{
+                                                                                width: '30px', height: '30px', background: 'transparent',
+                                                                                border: '1px solid #3d3020', borderRadius: '4px', cursor: 'pointer',
+                                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                                transition: 'border-color 0.15s'
+                                                                            }}
+                                                                            onMouseEnter={e => e.currentTarget.style.borderColor = '#e74c3c'}
+                                                                            onMouseLeave={e => e.currentTarget.style.borderColor = '#3d3020'}
+                                                                            title="Delete admin"
+                                                                        >
+                                                                            <Trash2 size={13} style={{ color: '#e74c3c' }} />
+                                                                        </button>
+                                                                    </>
                                                                 )}
                                                                 {isMe && (
                                                                     <span style={{ fontSize: '11px', color: '#6a5a4a', padding: '6px 0' }}>—</span>
@@ -384,6 +420,59 @@ export default function AdminProfile() {
                                     style={{ padding: '10px 28px', background: '#e74c3c', border: 'none', color: '#fff', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer', fontSize: '13px', fontWeight: 700, opacity: loading ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: '6px' }}>
                                     {loading && <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />}
                                     {loading ? 'Deleting...' : 'Delete'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── EDIT ADMIN MODAL ── */}
+            {editTarget && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+                    background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)',
+                    zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }} onClick={() => !loading && setEditTarget(null)}>
+                    <div style={{
+                        background: '#0f0c09', border: '1px solid #3d3020', borderRadius: '8px',
+                        width: '90%', maxWidth: '420px', padding: '0'
+                    }} onClick={e => e.stopPropagation()}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px', borderBottom: '1px solid #2a1f10' }}>
+                            <div style={{ fontSize: '16px', fontWeight: 700, color: '#fff' }}>Edit Admin</div>
+                            <button onClick={() => !loading && setEditTarget(null)} style={{ background: 'transparent', border: 'none', color: '#8a7a6a', cursor: 'pointer' }}><X size={18} /></button>
+                        </div>
+                        <div style={{ padding: '24px' }}>
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={labelStyle}>Username</label>
+                                <input
+                                    value={editForm.username}
+                                    onChange={e => setEditForm({ ...editForm, username: e.target.value })}
+                                    style={inputStyle}
+                                    onFocus={e => e.target.style.borderColor = '#c9a84c'}
+                                    onBlur={e => e.target.style.borderColor = '#3d3020'}
+                                />
+                            </div>
+                            <div style={{ marginBottom: '24px' }}>
+                                <label style={labelStyle}>Email</label>
+                                <input
+                                    value={editForm.email}
+                                    onChange={e => setEditForm({ ...editForm, email: e.target.value })}
+                                    type="email"
+                                    style={inputStyle}
+                                    onFocus={e => e.target.style.borderColor = '#c9a84c'}
+                                    onBlur={e => e.target.style.borderColor = '#3d3020'}
+                                />
+                            </div>
+                            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                                <button onClick={() => setEditTarget(null)} disabled={loading}
+                                    style={{ padding: '10px 28px', background: 'transparent', border: '1px solid #3d3020', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
+                                    Cancel
+                                </button>
+                                <button onClick={handleEditAdmin} disabled={loading}
+                                    style={{ padding: '10px 28px', background: '#c9a84c', border: 'none', color: '#0a0a0a', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer', fontSize: '13px', fontWeight: 700, opacity: loading ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    {loading && <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />}
+                                    {loading ? 'Saving...' : 'Save Changes'}
                                 </button>
                             </div>
                         </div>

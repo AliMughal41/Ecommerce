@@ -692,7 +692,7 @@ export default function HomePage({ wishlist, setWishlist }) {
               letterSpacing: '2px',
               color: '#fff'
             }}>
-              Why Choose Velora
+              Why Choose Velnora
             </h2>
             <div className="mx-auto mt-3" style={{ width: '60px', height: '2px', background: '#d4af37' }}></div>
           </div>

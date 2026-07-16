@@ -328,3 +328,40 @@ exports.deleteAdmin = async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to delete admin.' });
   }
 };
+
+// ─── Update Admin (founder only) ────────────────────────────────────────────
+exports.updateAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (req.admin.role !== 'founder') {
+      return res.status(403).json({ success: false, message: 'Only the founder admin can edit other admins.' });
+    }
+    const { username, email } = req.body;
+    if (!username || !email) {
+      return res.status(400).json({ success: false, message: 'Username and email are required.' });
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ success: false, message: 'Please provide a valid email.' });
+    }
+    if (email.toLowerCase() !== req.admin.email) {
+      const existing = await Admin.findOne({ email: email.toLowerCase(), _id: { $ne: id } });
+      if (existing) {
+        return res.status(400).json({ success: false, message: 'This email is already in use.' });
+      }
+    }
+    const target = await Admin.findById(id);
+    if (!target) {
+      return res.status(404).json({ success: false, message: 'Admin not found.' });
+    }
+    target.username = escapeHtml(username.trim());
+    target.email = email.toLowerCase();
+    await target.save();
+    res.status(200).json({ success: true, message: 'Admin updated.', admin: { _id: target._id, username: target.username, email: target.email, role: target.role } });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({ success: false, message: 'This email is already registered.' });
+    }
+    res.status(500).json({ success: false, message: 'Failed to update admin.' });
+  }
+};

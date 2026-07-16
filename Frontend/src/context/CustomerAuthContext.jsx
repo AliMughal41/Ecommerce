@@ -39,6 +39,25 @@ const CustomerAuthProvider = ({ children }) => {
     }
   }, [token]);
 
+  // Auto-check every 30s if customer still exists in DB (auto-logout if deleted by admin)
+  useEffect(() => {
+    if (!token) return;
+    const interval = setInterval(async () => {
+      try {
+        await axios.get(`${API}/customer/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } catch (error) {
+        if (error.response?.status === 401 || error.response?.status === 404) {
+          localStorage.removeItem('customerToken');
+          setToken(null);
+          setCustomer(null);
+        }
+      }
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [token]);
+
   const login = async (email, password) => {
     try {
       const { data } = await axios.post(`${API}/customer/login`, { email, password });
