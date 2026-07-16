@@ -9,6 +9,7 @@ const GOLD = '#c9a84c';
 
 export default function AdminReturns() {
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [returns, setReturns] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -69,8 +70,24 @@ export default function AdminReturns() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0a' }}>
-      <AdminSidebar />
-      <div style={{ flex: 1, padding: '24px', overflowY: 'auto', marginLeft: '260px' }}>
+      <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <div className="admin-main-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        {/* Header */}
+        <div style={{ height: '60px', background: '#0d0a06', borderBottom: '1px solid #2a1f10', display: 'flex', alignItems: 'center', padding: '0 24px', gap: '16px', flexShrink: 0 }}>
+          <button onClick={() => setSidebarOpen(s => !s)} className="admin-hamburger" style={{ background: 'transparent', border: 'none', color: '#8a7a6a', cursor: 'pointer', padding: '4px' }}>
+            <RefreshCw size={20} />
+          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '30px', height: '30px', borderRadius: '50%', border: '1.5px solid #c9a84c', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+              <img src="/images/logo.png" alt="VELNORA" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            </div>
+            <span style={{ fontWeight: 700, fontSize: '14px', letterSpacing: '2px', color: '#c9a84c' }}>VELNORA</span>
+          </div>
+          <div style={{ flex: 1 }} />
+          <button onClick={() => navigate('/admin-dashboard')} style={{ background: 'transparent', border: '1px solid #3d3020', color: '#8a7a6a', padding: '6px 14px', borderRadius: '4px', fontSize: '11px', cursor: 'pointer' }}>Dashboard</button>
+        </div>
+
+        <div style={{ flex: 1, padding: '24px', overflowY: 'auto' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
             <div>
@@ -255,6 +272,7 @@ export default function AdminReturns() {
               </div>
             </div>
           )}
+        </div>
         </div>
       </div>
       <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
