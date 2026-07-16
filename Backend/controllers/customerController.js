@@ -153,8 +153,11 @@ const registerCustomer = async (req, res) => {
     // Send email non-blocking — don't fail registration if email fails
     sendRegistrationOtpEmail(email.toLowerCase(), otp, firstName).catch(err => {
       console.error('[REG OTP EMAIL] Failed:', err.message || err);
+      if (err.response) console.error('[REG OTP EMAIL] Response:', JSON.stringify(err.response));
+      if (err.cause) console.error('[REG OTP EMAIL] Cause:', err.cause);
     });
 
+    console.log('[REGISTER] Customer saved, OTP generated. Email send triggered for:', email.toLowerCase());
     res.status(200).json({ success: true, message: `OTP sent to ${email}. Please verify to complete registration.` });
   } catch (error) {
     console.error('Customer registration error:', error.message);
@@ -210,6 +213,10 @@ const loginCustomer = async (req, res) => {
     const customer = await Customer.findOne({ email: email.toLowerCase() }).select('+password');
     if (!customer) {
       return res.status(401).json({ success: false, message: 'Invalid Email or Password.' });
+    }
+
+    if (!customer.isVerified) {
+      return res.status(403).json({ success: false, message: 'Please verify your email first. Check your inbox for the OTP code.' });
     }
 
     const isPasswordMatched = await customer.comparePassword(password);
