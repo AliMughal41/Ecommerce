@@ -103,7 +103,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange, item
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
         {/* Prev */}
         <button
-          onClick={() => onPageChange(currentPage - 1)}
+          onClick={() => { onPageChange(currentPage - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
           disabled={currentPage === 1}
           style={{
             padding: '6px 10px', borderRadius: '4px', border: `1px solid ${border}`,
@@ -129,7 +129,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange, item
           return (
             <button
               key={page}
-              onClick={() => onPageChange(page)}
+              onClick={() => { onPageChange(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
               style={{
                 padding: '6px 10px', minWidth: '32px', borderRadius: '4px', border: `1px solid ${isActive ? gold : border}`,
                 background: isActive ? gold : 'transparent',
@@ -147,7 +147,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange, item
 
         {/* Next */}
         <button
-          onClick={() => onPageChange(currentPage + 1)}
+          onClick={() => { onPageChange(currentPage + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
           disabled={currentPage === totalPages}
           style={{
             padding: '6px 10px', borderRadius: '4px', border: `1px solid ${border}`,
