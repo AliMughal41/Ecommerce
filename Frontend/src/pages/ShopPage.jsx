@@ -60,6 +60,32 @@ export default function ShopPage({ wishlist, setWishlist }) {
     }
   }, [highlightId]);
 
+  const getProductId = (product) => product._id || product.id || product.name || '';
+
+  const categoryNames = ['All', ...new Set(products.map(p => p.category).filter(Boolean))];
+
+  const activeSuperCat = superCategoryFilter
+    ? superCategories.find(s => s.name.toLowerCase() === superCategoryFilter.toLowerCase())
+    : null;
+
+  const subCategoryNames = activeSuperCat
+    ? categories.filter(c => c.superCategory?._id === activeSuperCat._id).map(c => c.name)
+    : [];
+
+  const filtered = products.filter(p => {
+    const catOk = activeCategory === 'All' || p.category === activeCategory;
+    const scOk = !activeSuperCat || subCategoryNames.includes(p.category);
+    return catOk && scOk;
+  });
+
+  const sorted = [...filtered].sort((a, b) => {
+    const getPrice = (p) => p.salePrice || p.price;
+    if (sortBy === 'Price: Low to High') return getPrice(a) - getPrice(b);
+    if (sortBy === 'Price: High to Low') return getPrice(b) - getPrice(a);
+    if (sortBy === 'Top Rated') return (b.rating || 0) - (a.rating || 0);
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+
   // After products load + filters settle, find highlighted product, set correct page, scroll & highlight
   useEffect(() => {
     if (!highlightId || loading || highlightDone.current) return;
@@ -85,8 +111,6 @@ export default function ShopPage({ wishlist, setWishlist }) {
     }, 100);
     return () => clearTimeout(timer);
   }, [highlightId, loading, currentPage, sorted, itemsPerPage]);
-
-  const getProductId = (product) => product._id || product.id || product.name || '';
 
   const toggleWishlist = (product) => {
     const productId = getProductId(product);
@@ -155,30 +179,6 @@ export default function ShopPage({ wishlist, setWishlist }) {
 
     navigate('/checkout', { state: { cart: [item] } });
   };
-
-  const categoryNames = ['All', ...new Set(products.map(p => p.category).filter(Boolean))];
-
-  const activeSuperCat = superCategoryFilter
-    ? superCategories.find(s => s.name.toLowerCase() === superCategoryFilter.toLowerCase())
-    : null;
-
-  const subCategoryNames = activeSuperCat
-    ? categories.filter(c => c.superCategory?._id === activeSuperCat._id).map(c => c.name)
-    : [];
-
-  const filtered = products.filter(p => {
-    const catOk = activeCategory === 'All' || p.category === activeCategory;
-    const scOk = !activeSuperCat || subCategoryNames.includes(p.category);
-    return catOk && scOk;
-  });
-
-  const sorted = [...filtered].sort((a, b) => {
-    const getPrice = (p) => p.salePrice || p.price;
-    if (sortBy === 'Price: Low to High') return getPrice(a) - getPrice(b);
-    if (sortBy === 'Price: High to Low') return getPrice(b) - getPrice(a);
-    if (sortBy === 'Top Rated') return (b.rating || 0) - (a.rating || 0);
-    return new Date(b.createdAt) - new Date(a.createdAt);
-  });
 
   const totalPages = Math.ceil(sorted.length / itemsPerPage);
   const paginatedProducts = sorted.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
