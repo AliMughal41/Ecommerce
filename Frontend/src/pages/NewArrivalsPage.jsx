@@ -283,7 +283,7 @@ export default function NewArrivalsPage({ wishlist, setWishlist }) {
                                     </div>
                                 )}
 
-                                <div className="shop-product-img" style={{ height: '220px', background: '#e5e5e5', overflow: 'hidden' }} onClick={() => { setSelectedProduct(p); setSelectedImageIdx(0); }}>
+                                <div className="shop-product-img" style={{ height: '220px', background: '#e5e5e5', overflow: 'hidden' }} onClick={() => navigate('/shop?highlight=' + getProductId(p))}>
                                     <img src={p.mainImage} alt={p.name} className="w-100 h-100" style={{ objectFit: 'cover', transition: 'transform 0.4s' }}
                                         onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.06)'}
                                         onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'} />

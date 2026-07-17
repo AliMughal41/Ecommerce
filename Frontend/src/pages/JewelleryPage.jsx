@@ -244,7 +244,7 @@ export default function JewelleryPage({ wishlist, setWishlist }) {
                   style={{ background: '#141010', cursor: 'pointer', transition: 'transform 0.25s', border: '1px solid #2a1f10', borderRadius: '4px' }}
                   onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.borderColor = '#c9a84c'; }}
                   onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = '#2a1f10'; }}>
-                  <button className="position-absolute d-flex align-items-center justify-content-center border-0 p-0"
+                  <button className="position-absolute d-flex align-items-center justify-content-center border-0 p-0 product-heart-btn"
                     style={{ zIndex: 3, top: '10px', left: '10px', background: 'rgba(10,10,10,0.6)', backdropFilter: 'blur(4px)', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)' }}
                     onClick={(e) => { e.stopPropagation(); toggleWishlist(p); }}>
                     <Heart size={16} strokeWidth={1.5}
@@ -259,7 +259,7 @@ export default function JewelleryPage({ wishlist, setWishlist }) {
                   ) : p.salePrice && p.price > p.salePrice ? (() => {
                     const discount = Math.round(((p.price - p.salePrice) / p.price) * 100);
                     return (
-                      <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 2 }}>
+                      <div className="product-discount-badge" style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 2 }}>
                         <div style={{ background: 'rgba(10,10,10,0.9)', backdropFilter: 'blur(6px)', border: '1px solid rgba(201,168,76,0.5)', borderRadius: '6px', padding: '7px 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span style={{ color: '#c9a84c', fontSize: '18px', fontWeight: 800 }}>{discount}%</span>
                           <div style={{ width: '1px', height: '18px', background: 'rgba(201,168,76,0.35)' }}></div>

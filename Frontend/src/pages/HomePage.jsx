@@ -500,26 +500,6 @@ export default function HomePage({ wishlist, setWishlist }) {
       <div className="col-lg-6 d-none d-lg-block"></div>
     </div>
   </div>
-
-  {/* ── Scroll Indicator ── */}
-  <div className="position-absolute bottom-0 start-50 translate-middle-x pb-4" style={{ zIndex: 10 }}>
-    <div className="d-flex flex-column align-items-center gap-1">
-      <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase' }}>SCROLL</span>
-      <div style={{ width: '16px', height: '26px', borderRadius: '8px', border: '2px solid rgba(212,175,55,0.3)', position: 'relative' }}>
-        <div style={{
-          position: 'absolute',
-          top: '4px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '3px',
-          height: '8px',
-          borderRadius: '2px',
-          background: '#d4af37',
-          animation: 'scrollIndicator 2s infinite'
-        }}></div>
-      </div>
-    </div>
-  </div>
 </section>
 
       {/* ─── SHOP BY CATEGORY ──────────────────────────────────────────── */}
@@ -630,7 +610,7 @@ export default function HomePage({ wishlist, setWishlist }) {
               
               <div id="arrived" className="d-flex gap-4 overflow-auto scroll-section" style={{ scrollBehavior: 'smooth', scrollbarWidth: 'none', msOverflowStyle: 'none', padding: '20px 0' }}>
                 {arrivedProducts.map((p) => (
-                  <div key={p.id} className="product-card flex-shrink-0 overflow-hidden rounded-4" style={{ width: '260px', cursor: 'pointer' }} onClick={() => navigate('/shop')}>
+                  <div key={p.id} className="product-card flex-shrink-0 overflow-hidden rounded-4" style={{ width: '260px', cursor: 'pointer' }} onClick={() => navigate('/shop?highlight=' + (p._id || p.id))}>
                     <div className="position-relative" style={{ height: '260px', background: 'rgba(255,255,255,0.02)', overflow: 'hidden' }}>
                       <img src={p.mainImage} alt={p.name} className="product-image w-100 h-100 object-fit-contain p-3" />
                       <button

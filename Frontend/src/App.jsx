@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import HomePage from './pages/HomePage'
 import ShopPage from './pages/ShopPage'
@@ -51,6 +51,14 @@ import { Navigate } from 'react-router-dom'
 import axios from 'axios'
 import './App.css'
 import API_URL from './config'
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 
 const ProtectedRoute = ({ children }) => {
   const [valid, setValid] = useState(null);
@@ -121,6 +129,7 @@ function App() {
     <CustomerAuthProvider>
     <AlertProvider>
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<ShopPage wishlist={wishlist} setWishlist={setWishlist} />} />
         <Route path="/shop" element={<ShopPage wishlist={wishlist} setWishlist={setWishlist} />} />

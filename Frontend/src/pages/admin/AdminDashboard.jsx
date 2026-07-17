@@ -121,7 +121,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Stat Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
+          <div className="dash-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
             {statCards.map((c, i) => (
               <div key={i} style={cardStyle}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = c.color; e.currentTarget.style.transform = 'translateY(-2px)'; }}
@@ -304,16 +304,9 @@ export default function AdminDashboard() {
 
           {/* Responsive CSS */}
           <style>{`
-            @media (max-width: 1200px) {
-              .dash-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
-            }
             @media (max-width: 768px) {
-              div[style*="grid-template-columns: repeat(4"] { grid-template-columns: repeat(2, 1fr) !important; }
               div[style*="grid-template-columns: 2fr 1fr"] { grid-template-columns: 1fr !important; }
               div[style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
-            }
-            @media (max-width: 576px) {
-              div[style*="grid-template-columns: repeat(4"] { grid-template-columns: 1fr !important; }
             }
           `}</style>
         </div>
