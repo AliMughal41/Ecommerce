@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Phone, MapPin, Clock } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock, Code2 } from 'lucide-react';
 import { FaInstagram, FaFacebookF, FaTiktok, FaYoutube, FaWhatsapp } from 'react-icons/fa';
 
 const socialLinks = [
@@ -126,6 +126,32 @@ export default function Footer() {
                             <Clock size={15} style={{ color: '#C8A56A', marginTop: '2px' }} strokeWidth={1.5} />
                             <span style={{ color: '#d1c7bc', fontSize: '13px', lineHeight: 1.5 }}>Mon - Sun (10AM - 10PM)</span>
                         </div>
+                    </div>
+                </div>
+
+                {/* Developer Section */}
+                <div className="d-flex flex-column flex-md-row align-items-center justify-content-center gap-3 py-3 mb-3" style={{ borderTop: '1px solid #2a1f10', borderBottom: '1px solid #2a1f10' }}>
+                    <div className="d-flex align-items-center gap-2">
+                        <Code2 size={16} style={{ color: '#C8A56A' }} strokeWidth={1.5} />
+                        <span style={{ color: '#8a7a6a', fontSize: '12px' }}>Want a website or online store like this?</span>
+                    </div>
+                    <div className="d-flex align-items-center gap-3 flex-wrap justify-content-center">
+                        <a href="mailto:alimghal41@gmail.com"
+                            className="d-flex align-items-center gap-2 text-decoration-none"
+                            style={{ color: '#d1c7bc', fontSize: '12px', transition: 'color 0.2s' }}
+                            onMouseEnter={e => e.currentTarget.style.color = '#C8A56A'}
+                            onMouseLeave={e => e.currentTarget.style.color = '#d1c7bc'}>
+                            <Mail size={14} strokeWidth={1.5} />
+                            <span>alimghal41@gmail.com</span>
+                        </a>
+                        <a href="tel:03444133108"
+                            className="d-flex align-items-center gap-2 text-decoration-none"
+                            style={{ color: '#d1c7bc', fontSize: '12px', transition: 'color 0.2s' }}
+                            onMouseEnter={e => e.currentTarget.style.color = '#C8A56A'}
+                            onMouseLeave={e => e.currentTarget.style.color = '#d1c7bc'}>
+                            <Phone size={14} strokeWidth={1.5} />
+                            <span>0344-4133108</span>
+                        </a>
                     </div>
                 </div>
 
