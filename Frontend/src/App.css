@@ -322,44 +322,6 @@ body.menu-open {
 }
 
 /* Admin table scroll */
-
-/* ════════════════════════════════════════════════════════════════
-   PRODUCT CARD MOBILE FIXES (Heart + Discount Badge)
-   ════════════════════════════════════════════════════════════════ */
-
-@media (max-width: 768px) {
-  .product-heart-btn {
-    top: 8px !important;
-    left: auto !important;
-    right: 8px !important;
-    width: 28px !important;
-    height: 28px !important;
-  }
-  .product-heart-btn svg {
-    width: 14px !important;
-    height: 14px !important;
-  }
-  .product-discount-badge {
-    right: auto !important;
-    left: 8px !important;
-    top: 8px !important;
-  }
-  .product-discount-badge > div {
-    padding: 4px 8px !important;
-    gap: 5px !important;
-    border-radius: 4px !important;
-  }
-  .product-discount-badge > div > span {
-    font-size: 13px !important;
-  }
-  .product-discount-badge > div > div:first-child {
-    height: 14px !important;
-  }
-  .product-discount-badge > div > div:last-child > span {
-    font-size: 7px !important;
-    letter-spacing: 1px !important;
-  }
-}
 @media (max-width: 767px) {
   .table-responsive {
     overflow-x: auto !important;

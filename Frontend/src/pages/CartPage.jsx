@@ -368,7 +368,7 @@ export default function CartPage() {
                                 return (
                                 <div key={pid} className="flex-shrink-0 overflow-hidden position-relative"
                                     style={{ width: '200px', border: '1px solid #3d3020', borderRadius: '4px', cursor: 'pointer', background: '#0f0c09', transition: 'transform 0.2s, border-color 0.2s' }}
-                                    onClick={() => navigate('/shop?highlight=' + pid)}
+                                    onClick={() => navigate('/shop')}
                                     onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.borderColor = '#c9a84c'; }}
                                     onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = '#3d3020'; }}>
 
@@ -387,7 +387,7 @@ export default function CartPage() {
                                         <div className="mb-2" style={{ color: '#c9a84c', fontSize: '14px', fontWeight: 600 }}>Rs. {(p.salePrice || p.price).toLocaleString()}</div>
                                         <button className="btn w-100 d-flex align-items-center justify-content-center gap-2"
                                             style={{ background: 'transparent', border: '1px solid rgba(201,168,76,0.3)', padding: '6px 0', borderRadius: '3px', transition: 'all 0.2s' }}
-                                            onClick={(e) => { e.stopPropagation(); navigate('/shop?highlight=' + pid); }}
+                                            onClick={(e) => { e.stopPropagation(); navigate('/shop'); }}
                                             onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(201,168,76,0.1)'}
                                             onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
                                             <ShoppingCart size={12} style={{ color: '#c9a84c' }} />

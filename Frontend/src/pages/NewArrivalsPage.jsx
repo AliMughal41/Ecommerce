@@ -30,7 +30,7 @@ export default function NewArrivalsPage({ wishlist, setWishlist }) {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [selectedImageIdx, setSelectedImageIdx] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
 
     const navigate = useNavigate();
 
@@ -283,7 +283,7 @@ export default function NewArrivalsPage({ wishlist, setWishlist }) {
                                     </div>
                                 )}
 
-                                <div className="shop-product-img" style={{ height: '220px', background: '#e5e5e5', overflow: 'hidden' }} onClick={() => navigate('/shop?highlight=' + getProductId(p))}>
+                                <div className="shop-product-img" style={{ height: '220px', background: '#e5e5e5', overflow: 'hidden' }} onClick={() => { setSelectedProduct(p); setSelectedImageIdx(0); }}>
                                     <img src={p.mainImage} alt={p.name} className="w-100 h-100" style={{ objectFit: 'cover', transition: 'transform 0.4s' }}
                                         onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.06)'}
                                         onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'} />

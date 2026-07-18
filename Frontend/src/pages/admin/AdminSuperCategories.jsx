@@ -26,7 +26,7 @@ export default function AdminSuperCategories() {
     const [activePage, setActivePage] = useState('super-categories');
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [itemsPerPage, setItemsPerPage] = useState(8);
     const [loading, setLoading] = useState(false);
 
     const [showAdd, setShowAdd] = useState(false);

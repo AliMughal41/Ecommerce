@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Heart, Star, ShieldCheck, Tag, Truck, Shield, Lock, ShoppingCart, Diamond, Loader2, ChevronDown, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Heart, Star, ShieldCheck, Tag, Truck, Shield, Lock, ShoppingCart, Diamond, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -20,14 +20,10 @@ export default function ShopPage({ wishlist, setWishlist }) {
   const [sortBy, setSortBy] = useState('Newest First');
   const { showAlert } = useAlert();
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const superCategoryFilter = searchParams.get('superCategory') || '';
-  const highlightId = searchParams.get('highlight') || null;
-  const highlightDone = useRef(false);
-  const [catDropdownOpen, setCatDropdownOpen] = useState(false);
-  const catDropdownRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,73 +50,7 @@ export default function ShopPage({ wishlist, setWishlist }) {
     setCurrentPage(1);
   }, [activeCategory, sortBy, superCategoryFilter]);
 
-  // When highlight param exists, force category to 'All' so product is visible
-  useEffect(() => {
-    if (highlightId) {
-      setActiveCategory('All');
-      highlightDone.current = false;
-    }
-  }, [highlightId]);
-
-  useEffect(() => {
-    const handleClick = (e) => {
-      if (catDropdownRef.current && !catDropdownRef.current.contains(e.target)) setCatDropdownOpen(false);
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
-
   const getProductId = (product) => product._id || product.id || product.name || '';
-
-  const categoryNames = ['All', ...new Set(products.map(p => p.category).filter(Boolean))];
-
-  const activeSuperCat = superCategoryFilter
-    ? superCategories.find(s => s.name.toLowerCase() === superCategoryFilter.toLowerCase())
-    : null;
-
-  const subCategoryNames = activeSuperCat
-    ? categories.filter(c => c.superCategory?._id === activeSuperCat._id).map(c => c.name)
-    : [];
-
-  const filtered = products.filter(p => {
-    const catOk = activeCategory === 'All' || p.category === activeCategory;
-    const scOk = !activeSuperCat || subCategoryNames.includes(p.category);
-    return catOk && scOk;
-  });
-
-  const sorted = [...filtered].sort((a, b) => {
-    const getPrice = (p) => p.salePrice || p.price;
-    if (sortBy === 'Price: Low to High') return getPrice(a) - getPrice(b);
-    if (sortBy === 'Price: High to Low') return getPrice(b) - getPrice(a);
-    if (sortBy === 'Top Rated') return (b.rating || 0) - (a.rating || 0);
-    return new Date(b.createdAt) - new Date(a.createdAt);
-  });
-
-  // After products load + filters settle, find highlighted product, set correct page, scroll & highlight
-  useEffect(() => {
-    if (!highlightId || loading || highlightDone.current) return;
-    const idx = sorted.findIndex(p => getProductId(p) === highlightId);
-    if (idx < 0) return;
-    const targetPage = Math.floor(idx / itemsPerPage) + 1;
-    if (targetPage !== currentPage) {
-      setCurrentPage(targetPage);
-      return;
-    }
-    highlightDone.current = true;
-    const timer = setTimeout(() => {
-      const el = document.getElementById(`shop-product-${highlightId}`);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        el.classList.add('product-highlighted');
-        setTimeout(() => el.classList.remove('product-highlighted'), 3000);
-      }
-      const newParams = new URLSearchParams(searchParams);
-      newParams.delete('highlight');
-      const qs = newParams.toString();
-      window.history.replaceState({}, '', `${window.location.pathname}${qs ? '?' + qs : ''}`);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [highlightId, loading, currentPage, sorted, itemsPerPage]);
 
   const toggleWishlist = (product) => {
     const productId = getProductId(product);
@@ -189,6 +119,30 @@ export default function ShopPage({ wishlist, setWishlist }) {
 
     navigate('/checkout', { state: { cart: [item] } });
   };
+
+  const categoryNames = ['All', ...new Set(products.map(p => p.category).filter(Boolean))];
+
+  const activeSuperCat = superCategoryFilter
+    ? superCategories.find(s => s.name.toLowerCase() === superCategoryFilter.toLowerCase())
+    : null;
+
+  const subCategoryNames = activeSuperCat
+    ? categories.filter(c => c.superCategory?._id === activeSuperCat._id).map(c => c.name)
+    : [];
+
+  const filtered = products.filter(p => {
+    const catOk = activeCategory === 'All' || p.category === activeCategory;
+    const scOk = !activeSuperCat || subCategoryNames.includes(p.category);
+    return catOk && scOk;
+  });
+
+  const sorted = [...filtered].sort((a, b) => {
+    const getPrice = (p) => p.salePrice || p.price;
+    if (sortBy === 'Price: Low to High') return getPrice(a) - getPrice(b);
+    if (sortBy === 'Price: High to Low') return getPrice(b) - getPrice(a);
+    if (sortBy === 'Top Rated') return (b.rating || 0) - (a.rating || 0);
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
 
   const totalPages = Math.ceil(sorted.length / itemsPerPage);
   const paginatedProducts = sorted.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -310,72 +264,23 @@ export default function ShopPage({ wishlist, setWishlist }) {
 
         {/* Filter Bar */}
         <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-3 filter-bar-mobile" style={{ borderBottom: '1px solid #3d3020' }}>
-          <div className="d-flex gap-3 flex-wrap align-items-center">
-            {/* Categories Dropdown */}
-            <div ref={catDropdownRef} style={{ position: 'relative' }}>
-              <button
-                onClick={() => setCatDropdownOpen(!catDropdownOpen)}
-                className="btn fw-semibold text-uppercase d-flex align-items-center gap-2"
+          <div className="d-flex gap-3 flex-wrap">
+            {(activeSuperCat
+              ? ['All', ...subCategoryNames]
+              : categoryNames
+            ).map(cat => (
+              <button key={cat} onClick={() => setActiveCategory(cat)}
+                className="btn fw-semibold text-uppercase"
                 style={{
                   fontSize: '13px', letterSpacing: '1px',
-                  background: activeCategory !== 'All' ? '#b89456' : 'transparent',
-                  color: activeCategory !== 'All' ? '#0a0a0a' : '#8a7a6a',
-                  border: `1px solid ${activeCategory !== 'All' ? '#b89456' : '#3d3020'}`,
-                  borderRadius: '3px', padding: '8px 20px', position: 'relative'
+                  background: activeCategory === cat ? '#b89456' : 'transparent',
+                  color: activeCategory === cat ? '#0a0a0a' : '#8a7a6a',
+                  border: `1px solid ${activeCategory === cat ? '#b89456' : '#3d3020'}`,
+                  borderRadius: '3px', padding: '8px 24px'
                 }}>
-                {activeCategory !== 'All' ? activeCategory : 'Categories'}
-                <ChevronDown size={14} style={{ transition: 'transform 0.2s', transform: catDropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
+                {cat}
               </button>
-              {catDropdownOpen && (
-                <div style={{
-                  position: 'absolute', top: '100%', left: 0, marginTop: '4px',
-                  background: '#141010', border: '1px solid #3d3020', borderRadius: '6px',
-                  minWidth: '200px', zIndex: 50, overflow: 'hidden',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.6)'
-                }}>
-                  <div onClick={() => { setActiveCategory('All'); setCatDropdownOpen(false); }}
-                    style={{
-                      padding: '10px 16px', cursor: 'pointer', fontSize: '13px', fontWeight: 600,
-                      color: activeCategory === 'All' ? '#0a0a0a' : '#8a7a6a',
-                      background: activeCategory === 'All' ? '#c9a84c' : 'transparent',
-                      borderBottom: '1px solid #2a1f10', letterSpacing: '0.5px', transition: 'all 0.15s'
-                    }}
-                    onMouseEnter={e => { if (activeCategory !== 'All') e.currentTarget.style.background = 'rgba(201,168,76,0.1)'; }}
-                    onMouseLeave={e => { if (activeCategory !== 'All') e.currentTarget.style.background = 'transparent'; }}>
-                    All
-                  </div>
-                  {categoryNames.filter(c => c !== 'All').map(cat => (
-                    <div key={cat} onClick={() => { setActiveCategory(cat); setCatDropdownOpen(false); }}
-                      style={{
-                        padding: '10px 16px', cursor: 'pointer', fontSize: '13px', fontWeight: 600,
-                        color: activeCategory === cat ? '#0a0a0a' : '#8a7a6a',
-                        background: activeCategory === cat ? '#c9a84c' : 'transparent',
-                        borderBottom: '1px solid #2a1f10', letterSpacing: '0.5px', transition: 'all 0.15s'
-                      }}
-                      onMouseEnter={e => { if (activeCategory !== cat) e.currentTarget.style.background = 'rgba(201,168,76,0.1)'; }}
-                      onMouseLeave={e => { if (activeCategory !== cat) e.currentTarget.style.background = 'transparent'; }}>
-                      {cat}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Page Navigation Links */}
-            <button onClick={() => navigate('/bags')}
-              className="btn fw-semibold text-uppercase"
-              style={{ fontSize: '13px', letterSpacing: '1px', background: 'transparent', color: '#8a7a6a', border: '1px solid #3d3020', borderRadius: '3px', padding: '8px 20px', transition: 'all 0.2s' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#c9a84c'; e.currentTarget.style.color = '#c9a84c'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = '#3d3020'; e.currentTarget.style.color = '#8a7a6a'; }}>
-              Bags
-            </button>
-            <button onClick={() => navigate('/jewellery')}
-              className="btn fw-semibold text-uppercase"
-              style={{ fontSize: '13px', letterSpacing: '1px', background: 'transparent', color: '#8a7a6a', border: '1px solid #3d3020', borderRadius: '3px', padding: '8px 20px', transition: 'all 0.2s' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#c9a84c'; e.currentTarget.style.color = '#c9a84c'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = '#3d3020'; e.currentTarget.style.color = '#8a7a6a'; }}>
-              Jewellery
-            </button>
+            ))}
           </div>
           <div className="d-flex gap-3 align-items-center flex-wrap">
             <select value={sortBy} onChange={e => setSortBy(e.target.value)}
@@ -402,20 +307,19 @@ export default function ShopPage({ wishlist, setWishlist }) {
               </div>
             ))}
             <style>{`@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
-            <style>{`.product-highlighted { animation: highlightGlow 3s ease-out forwards; } @keyframes highlightGlow { 0% { box-shadow: 0 0 0 3px #c9a84c, 0 0 20px rgba(201,168,76,0.6); border-color: #c9a84c !important; } 100% { box-shadow: none; border-color: #2a1f10; } }`}</style>
           </div>
         ) : (
         <div className="row g-3 g-md-4">
           {paginatedProducts.map(p => (
-            <div key={p._id || p.id} id={`shop-product-${getProductId(p)}`} className="col-6 col-md-4 col-lg-3">
+            <div key={p._id || p.id} className="col-6 col-md-4 col-lg-3">
               <div className="h-100 overflow-hidden position-relative"
-                style={{ background: '#141010', cursor: 'pointer', transition: 'transform 0.25s, box-shadow 0.3s, border-color 0.3s', border: '1px solid #2a1f10', borderRadius: '4px' }}
+                style={{ background: '#141010', cursor: 'pointer', transition: 'transform 0.25s', border: '1px solid #2a1f10', borderRadius: '4px' }}
                 onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.borderColor = '#c9a84c'; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = '#2a1f10'; }}>
 
                 {/* Wishlist heart — LEFT side */}
                 <button
-                  className="position-absolute d-flex align-items-center justify-content-center border-0 p-0 product-heart-btn"
+                  className="position-absolute d-flex align-items-center justify-content-center border-0 p-0"
                   style={{ zIndex: 3, top: '10px', left: '10px', background: 'rgba(10,10,10,0.6)', backdropFilter: 'blur(4px)', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)' }}
                   onClick={(e) => { e.stopPropagation(); toggleWishlist(p); }}>
                   <Heart
@@ -442,7 +346,7 @@ export default function ShopPage({ wishlist, setWishlist }) {
                 ) : p.salePrice && p.price > p.salePrice ? (() => {
                   const discount = Math.round(((p.price - p.salePrice) / p.price) * 100);
                   return (
-                    <div className="product-discount-badge" style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 2, animation: 'badge-bounce 3s ease-in-out infinite' }}>
+                    <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 2, animation: 'badge-bounce 3s ease-in-out infinite' }}>
                       <div style={{ background: 'rgba(10,10,10,0.9)', backdropFilter: 'blur(6px)', border: '1px solid rgba(201,168,76,0.5)', borderRadius: '6px', padding: '7px 12px', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 12px rgba(201,168,76,0.15)' }}>
                         <span style={{ color: '#c9a84c', fontSize: '18px', fontWeight: 800, lineHeight: 1 }}>{discount}%</span>
                         <div style={{ width: '1px', height: '18px', background: 'rgba(201,168,76,0.35)' }}></div>
@@ -546,19 +450,6 @@ export default function ShopPage({ wishlist, setWishlist }) {
           />
         </div>
       </div>
-
-      <style>{`
-        .product-highlighted {
-          animation: highlightGlow 3s ease-out forwards !important;
-          position: relative;
-          z-index: 5;
-        }
-        @keyframes highlightGlow {
-          0% { box-shadow: 0 0 0 3px #c9a84c, 0 0 30px rgba(201,168,76,0.6); border-color: #c9a84c !important; transform: scale(1.02); }
-          70% { box-shadow: 0 0 0 1px rgba(201,168,76,0.3), 0 0 10px rgba(201,168,76,0.2); }
-          100% { box-shadow: none; border-color: #2a1f10; transform: scale(1); }
-        }
-      `}</style>
 
       <Footer />
     </div>
