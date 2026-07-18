@@ -35,26 +35,35 @@ export default function Pagination({ currentPage, totalPages, onPageChange, item
     }
   };
 
-  // Dynamic page numbers: 4 around current + first + last + ellipsis
+  // Dynamic page numbers: always first + last, 4 around current, ellipsis for gaps
   const getPageNumbers = () => {
     const pages = [];
-    const windowSize = 4;
 
-    if (totalPages <= windowSize + 2) {
+    if (totalPages <= 7) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
       return pages;
     }
 
-    let start = Math.max(2, currentPage - 1);
-    let end = Math.min(totalPages - 1, start + windowSize - 1);
-    if (end - start < windowSize - 1) {
+    pages.push(1);
+
+    const windowSize = 4;
+    let start, end;
+
+    if (currentPage <= 3) {
+      start = 2;
+      end = Math.min(5, totalPages - 1);
+    } else if (currentPage >= totalPages - 2) {
+      end = totalPages - 1;
       start = Math.max(2, end - windowSize + 1);
+    } else {
+      start = currentPage - 1;
+      end = currentPage + 2;
     }
 
-    pages.push(1);
     if (start > 2) pages.push('...');
     for (let i = start; i <= end; i++) pages.push(i);
     if (end < totalPages - 1) pages.push('...');
+
     pages.push(totalPages);
     return pages;
   };
