@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-const PER_PAGE_OPTIONS = [5, 7, 10, 20, 50, 100];
+const PER_PAGE_OPTIONS = [5, 10, 20, 50, 100];
 
 export default function Pagination({ currentPage, totalPages, onPageChange, itemsPerPage, onItemsPerPageChange, darkTheme = true }) {
   const [showPerPage, setShowPerPage] = useState(false);
@@ -35,37 +35,36 @@ export default function Pagination({ currentPage, totalPages, onPageChange, item
     }
   };
 
-  // Dynamic page numbers: always first + last, 4 around current, ellipsis for gaps
+  // EXACT same logic as Permissions page — 5 visible pages around current
   const getPageNumbers = () => {
-    const pages = [];
+    const pageNumbers = [];
+    const maxVisiblePages = 5;
 
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-      return pages;
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) pageNumbers.push(i);
+      return pageNumbers;
     }
 
-    pages.push(1);
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
-    const windowSize = 4;
-    let start, end;
-
-    if (currentPage <= 3) {
-      start = 2;
-      end = Math.min(5, totalPages - 1);
-    } else if (currentPage >= totalPages - 2) {
-      end = totalPages - 1;
-      start = Math.max(2, end - windowSize + 1);
-    } else {
-      start = currentPage - 1;
-      end = currentPage + 2;
+    if (endPage - startPage < maxVisiblePages - 1) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
 
-    if (start > 2) pages.push('...');
-    for (let i = start; i <= end; i++) pages.push(i);
-    if (end < totalPages - 1) pages.push('...');
+    if (startPage > 1) {
+      pageNumbers.push(1);
+      if (startPage > 2) pageNumbers.push('...');
+    }
 
-    pages.push(totalPages);
-    return pages;
+    for (let i = startPage; i <= endPage; i++) pageNumbers.push(i);
+
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) pageNumbers.push('...');
+      pageNumbers.push(totalPages);
+    }
+
+    return pageNumbers;
   };
 
   const pageNumbers = getPageNumbers();
@@ -88,7 +87,6 @@ export default function Pagination({ currentPage, totalPages, onPageChange, item
 
       {/* Left: Per page selector */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: textMuted }}>
-        <span>Show</span>
         <div ref={dropdownRef} style={{ position: 'relative' }}>
           <button
             onClick={() => setShowPerPage(!showPerPage)}
@@ -101,14 +99,14 @@ export default function Pagination({ currentPage, totalPages, onPageChange, item
             onMouseEnter={e => e.currentTarget.style.borderColor = gold}
             onMouseLeave={e => e.currentTarget.style.borderColor = border}
           >
-            {itemsPerPage}
+            {itemsPerPage} / page
             <span style={{ fontSize: '8px', color: textMuted }}>▼</span>
           </button>
           {showPerPage && (
             <div style={{
               position: 'absolute', bottom: '100%', left: 0, marginBottom: '4px',
               background: bg, border: `1px solid ${border}`, borderRadius: '6px',
-              overflow: 'hidden', zIndex: 50, minWidth: '55px',
+              overflow: 'hidden', zIndex: 50, minWidth: '80px',
               boxShadow: darkTheme ? '0 8px 24px rgba(0,0,0,0.6)' : '0 4px 12px rgba(0,0,0,0.15)'
             }}>
               {PER_PAGE_OPTIONS.map(opt => (
@@ -124,13 +122,12 @@ export default function Pagination({ currentPage, totalPages, onPageChange, item
                   onMouseEnter={e => { if (opt !== itemsPerPage) e.currentTarget.style.background = hoverBg; }}
                   onMouseLeave={e => { if (opt !== itemsPerPage) e.currentTarget.style.background = opt === itemsPerPage ? goldBg : 'transparent'; }}
                 >
-                  {opt}
+                  {opt} / page
                 </div>
               ))}
             </div>
           )}
         </div>
-        <span>/ page</span>
       </div>
 
       {/* Center: Page buttons */}
@@ -196,24 +193,22 @@ export default function Pagination({ currentPage, totalPages, onPageChange, item
         </button>
       </div>
 
-      {/* Right: Go to page + info */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: textMuted }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span>Go to</span>
-          <input
-            type="number"
-            min={1}
-            max={totalPages}
-            value={goToPage}
-            placeholder={currentPage}
-            onChange={e => setGoToPage(e.target.value)}
-            onKeyDown={handleGoToPage}
-            onFocus={e => e.currentTarget.style.borderColor = gold}
-            onBlur={e => e.currentTarget.style.borderColor = border}
-            style={inputStyle}
-          />
-          <span>of {totalPages}</span>
-        </div>
+      {/* Right: Go to page */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: textMuted }}>
+        <span>Go to</span>
+        <input
+          type="number"
+          min={1}
+          max={totalPages}
+          value={goToPage}
+          placeholder={currentPage}
+          onChange={e => setGoToPage(e.target.value)}
+          onKeyDown={handleGoToPage}
+          onFocus={e => e.currentTarget.style.borderColor = gold}
+          onBlur={e => e.currentTarget.style.borderColor = border}
+          style={inputStyle}
+        />
+        <span>Page</span>
       </div>
     </div>
   );
