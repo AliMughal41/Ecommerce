@@ -133,19 +133,7 @@ export default function Footer() {
                     <span style={{ color: '#d1c7bc', fontSize: '12px' }}>
                         &copy; {new Date().getFullYear()} Velnora. All Rights Reserved.
                     </span>
-                    <div className="d-flex align-items-center gap-2">
-                        {['Easypaisa', 'JazzCash', 'COD'].map(p => (
-                            <span
-                                key={p}
-                                className="px-2 py-1 rounded"
-                                style={{ background: '#1a1410', border: '1px solid #3d3020', color: '#8a7a6a', fontSize: '10px', letterSpacing: '0.5px', transition: 'all 0.2s' }}
-                                onMouseEnter={e => { e.currentTarget.style.borderColor = '#C8A56A'; e.currentTarget.style.color = '#C8A56A'; }}
-                                onMouseLeave={e => { e.currentTarget.style.borderColor = '#3d3020'; e.currentTarget.style.color = '#8a7a6a'; }}
-                            >
-                                {p}
-                            </span>
-                        ))}
-                    </div>
+
                 </div>
             </div>
         </footer>
