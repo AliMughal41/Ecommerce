@@ -221,6 +221,12 @@ body.menu-open {
     padding: 6px 12px !important;
     font-size: 11px !important;
   }
+  .filter-bar-mobile > div > div[style*="position: relative"] > div:last-child {
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    min-width: unset !important;
+  }
 }
 
 /* ════════════════════════════════════════════════════════════════

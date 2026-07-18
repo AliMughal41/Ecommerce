@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Heart, Star, Truck, Shield, Lock, ShoppingCart, Diamond, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Heart, Star, Truck, Shield, Lock, ShoppingCart, Diamond, Loader2, ChevronDown } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -21,6 +21,16 @@ export default function JewelleryPage({ wishlist, setWishlist }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const navigate = useNavigate();
+  const [catDropdownOpen, setCatDropdownOpen] = useState(false);
+  const catDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (catDropdownRef.current && !catDropdownRef.current.contains(e.target)) setCatDropdownOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -197,21 +207,54 @@ export default function JewelleryPage({ wishlist, setWishlist }) {
 
       <div className="container-fluid px-3 px-md-4 py-4">
         {/* Filter Bar */}
-        <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-3" style={{ borderBottom: '1px solid #3d3020' }}>
-          <div className="d-flex gap-3 flex-wrap">
-            {categoryNames.map(cat => (
-              <button key={cat} onClick={() => setActiveCategory(cat)}
-                className="btn fw-semibold text-uppercase"
+        <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-3 filter-bar-mobile" style={{ borderBottom: '1px solid #3d3020' }}>
+          <div className="d-flex gap-3 flex-wrap align-items-center">
+            {/* Categories Dropdown */}
+            <div ref={catDropdownRef} style={{ position: 'relative' }}>
+              <button onClick={() => setCatDropdownOpen(!catDropdownOpen)}
+                className="btn fw-semibold text-uppercase d-flex align-items-center gap-2"
                 style={{
                   fontSize: '13px', letterSpacing: '1px',
-                  background: activeCategory === cat ? '#b89456' : 'transparent',
-                  color: activeCategory === cat ? '#0a0a0a' : '#8a7a6a',
-                  border: `1px solid ${activeCategory === cat ? '#b89456' : '#3d3020'}`,
+                  background: catDropdownOpen ? '#b89456' : 'transparent',
+                  color: catDropdownOpen ? '#0a0a0a' : '#8a7a6a',
+                  border: `1px solid ${catDropdownOpen ? '#b89456' : '#3d3020'}`,
                   borderRadius: '3px', padding: '8px 24px'
                 }}>
-                {cat}
+                Categories <ChevronDown size={14} style={{ transform: catDropdownOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
               </button>
-            ))}
+              {catDropdownOpen && (
+                <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: '4px', background: '#1a1410', border: '1px solid #3d3020', borderRadius: '4px', minWidth: '200px', zIndex: 100, maxHeight: '300px', overflowY: 'auto' }}>
+                  {categoryNames.map(cat => (
+                    <button key={cat} onClick={() => { setActiveCategory(cat); setCatDropdownOpen(false); }}
+                      className="w-100 text-start px-3 py-2 border-0"
+                      style={{
+                        fontSize: '13px', letterSpacing: '0.5px', cursor: 'pointer',
+                        background: activeCategory === cat ? '#b89456' : 'transparent',
+                        color: activeCategory === cat ? '#0a0a0a' : '#d1c7bc',
+                        transition: 'background 0.2s'
+                      }}
+                      onMouseEnter={e => { if (activeCategory !== cat) e.currentTarget.style.background = 'rgba(184,148,86,0.15)'; }}
+                      onMouseLeave={e => { if (activeCategory !== cat) e.currentTarget.style.background = 'transparent'; }}>
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Page Link */}
+            <button onClick={() => navigate('/bags')}
+              className="btn fw-semibold text-uppercase"
+              style={{
+                fontSize: '13px', letterSpacing: '1px',
+                background: 'transparent', color: '#8a7a6a',
+                border: '1px solid #3d3020', borderRadius: '3px', padding: '8px 24px',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#b89456'; e.currentTarget.style.color = '#b89456'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = '#3d3020'; e.currentTarget.style.color = '#8a7a6a'; }}>
+              Bags
+            </button>
           </div>
           <select value={sortBy} onChange={e => setSortBy(e.target.value)}
             className="form-select border text-white fw-semibold"
