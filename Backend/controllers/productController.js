@@ -1,5 +1,6 @@
 const Product = require('../models/Product');
 const cloudinary = require('cloudinary').v2;
+const sharp = require('sharp');
 const { sendProductNotification } = require('./subscriberController');
 const { sendProductNotification: sendCustomerProductNotification } = require('./customerNotificationController');
 
@@ -7,6 +8,18 @@ const { sendProductNotification: sendCustomerProductNotification } = require('./
 const isValidBase64Image = (str) => {
   if (typeof str !== 'string') return false;
   return /^data:image\/(jpeg|jpg|png|webp);base64,/.test(str);
+};
+
+// Compress base64 image using sharp — max 1200px width, quality 80, WebP
+const compressImage = async (base64Str) => {
+  const matches = base64Str.match(/^data:image\/(jpeg|jpg|png|webp);base64,(.+)$/);
+  if (!matches) return base64Str;
+  const buffer = Buffer.from(matches[2], 'base64');
+  const compressed = await sharp(buffer)
+    .resize({ width: 1200, height: 1200, fit: 'inside', withoutEnlargement: true })
+    .webp({ quality: 80, effort: 6 })
+    .toBuffer();
+  return `data:image/webp;base64,${compressed.toString('base64')}`;
 };
 
 const ALLOWED_FIELDS = ['name', 'category', 'price', 'salePrice', 'stock', 'description', 'status'];
@@ -24,16 +37,17 @@ exports.newProduct = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Please upload at least one image' });
     }
 
-    // Validate and upload images
+    // Compress and upload images
     let imagesLinks = [];
     for (let i = 0; i < images.length; i++) {
       if (!isValidBase64Image(images[i])) {
         return res.status(400).json({ success: false, message: 'Invalid image format. Only JPG, PNG, and WebP are allowed.' });
       }
-      const result = await cloudinary.uploader.upload(images[i], {
+      const compressed = await compressImage(images[i]);
+      const result = await cloudinary.uploader.upload(compressed, {
         folder: 'velnora_products',
         resource_type: 'image',
-        format: 'jpg',
+        format: 'webp',
       });
       imagesLinks.push({ public_id: result.public_id, url: result.secure_url });
     }
@@ -136,10 +150,11 @@ exports.updateProduct = async (req, res) => {
     const newImages = req.body.images || [];
     for (let i = 0; i < newImages.length; i++) {
       if (newImages[i] && isValidBase64Image(newImages[i])) {
-        const result = await cloudinary.uploader.upload(newImages[i], {
+        const compressed = await compressImage(newImages[i]);
+        const result = await cloudinary.uploader.upload(compressed, {
           folder: 'velnora_products',
           resource_type: 'image',
-          format: 'jpg',
+          format: 'webp',
         });
         imagesLinks.push({ public_id: result.public_id, url: result.secure_url });
       }
