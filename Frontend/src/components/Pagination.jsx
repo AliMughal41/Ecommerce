@@ -1,16 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
-const PER_PAGE_OPTIONS = [5, 8, 10];
+const PER_PAGE_OPTIONS = [5, 7, 10, 20, 50, 100];
 
 export default function Pagination({ currentPage, totalPages, onPageChange, itemsPerPage, onItemsPerPageChange, darkTheme = true }) {
   const [showPerPage, setShowPerPage] = useState(false);
+  const [goToPage, setGoToPage] = useState('');
   const dropdownRef = useRef(null);
 
   useEffect(() => {
     const handleClick = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setShowPerPage(false);
-      }
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setShowPerPage(false);
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
@@ -18,6 +17,25 @@ export default function Pagination({ currentPage, totalPages, onPageChange, item
 
   if (totalPages <= 1) return null;
 
+  const goTo = (page) => {
+    const p = Math.max(1, Math.min(totalPages, page));
+    if (p !== currentPage) {
+      onPageChange(p);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleGoToPage = (e) => {
+    if (e.key === 'Enter') {
+      const val = parseInt(goToPage, 10);
+      if (val && val >= 1 && val <= totalPages) {
+        goTo(val);
+        setGoToPage('');
+      }
+    }
+  };
+
+  // Dynamic page numbers: 4 around current + first + last + ellipsis
   const getPageNumbers = () => {
     const pages = [];
     const windowSize = 4;
@@ -38,7 +56,6 @@ export default function Pagination({ currentPage, totalPages, onPageChange, item
     for (let i = start; i <= end; i++) pages.push(i);
     if (end < totalPages - 1) pages.push('...');
     pages.push(totalPages);
-
     return pages;
   };
 
@@ -46,15 +63,21 @@ export default function Pagination({ currentPage, totalPages, onPageChange, item
 
   const bg = darkTheme ? '#0d0a06' : '#fff';
   const border = darkTheme ? '#2a1f10' : '#e0e0e0';
-  const textPrimary = darkTheme ? '#fff' : '#333';
   const textMuted = darkTheme ? '#8a7a6a' : '#888';
   const gold = '#c9a84c';
   const goldBg = darkTheme ? 'rgba(201,168,76,0.12)' : 'rgba(201,168,76,0.1)';
   const hoverBg = darkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+  const disabledColor = darkTheme ? '#333' : '#ccc';
+  const inputStyle = {
+    background: bg, border: `1px solid ${border}`, borderRadius: '4px',
+    color: '#fff', padding: '6px 8px', fontSize: '12px', width: '44px',
+    textAlign: 'center', outline: 'none', transition: 'border-color 0.2s'
+  };
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', padding: '16px 0', borderTop: `1px solid ${border}` }}>
-      {/* Per page selector */}
+
+      {/* Left: Per page selector */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: textMuted }}>
         <span>Show</span>
         <div ref={dropdownRef} style={{ position: 'relative' }}>
@@ -64,8 +87,10 @@ export default function Pagination({ currentPage, totalPages, onPageChange, item
               background: bg, border: `1px solid ${border}`, borderRadius: '4px',
               color: gold, padding: '4px 10px', fontSize: '12px', fontWeight: 600,
               cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px',
-              minWidth: '44px', justifyContent: 'center'
+              minWidth: '44px', justifyContent: 'center', transition: 'border-color 0.2s'
             }}
+            onMouseEnter={e => e.currentTarget.style.borderColor = gold}
+            onMouseLeave={e => e.currentTarget.style.borderColor = border}
           >
             {itemsPerPage}
             <span style={{ fontSize: '8px', color: textMuted }}>▼</span>
@@ -74,7 +99,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange, item
             <div style={{
               position: 'absolute', bottom: '100%', left: 0, marginBottom: '4px',
               background: bg, border: `1px solid ${border}`, borderRadius: '6px',
-              overflow: 'hidden', zIndex: 50, minWidth: '50px',
+              overflow: 'hidden', zIndex: 50, minWidth: '55px',
               boxShadow: darkTheme ? '0 8px 24px rgba(0,0,0,0.6)' : '0 4px 12px rgba(0,0,0,0.15)'
             }}>
               {PER_PAGE_OPTIONS.map(opt => (
@@ -82,10 +107,10 @@ export default function Pagination({ currentPage, totalPages, onPageChange, item
                   key={opt}
                   onClick={() => { onItemsPerPageChange(opt); setShowPerPage(false); }}
                   style={{
-                    padding: '6px 12px', cursor: 'pointer', fontSize: '12px', fontWeight: opt === itemsPerPage ? 700 : 400,
+                    padding: '6px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: opt === itemsPerPage ? 700 : 400,
                     color: opt === itemsPerPage ? gold : textMuted,
                     background: opt === itemsPerPage ? goldBg : 'transparent',
-                    textAlign: 'center',
+                    textAlign: 'center', transition: 'background 0.15s'
                   }}
                   onMouseEnter={e => { if (opt !== itemsPerPage) e.currentTarget.style.background = hoverBg; }}
                   onMouseLeave={e => { if (opt !== itemsPerPage) e.currentTarget.style.background = opt === itemsPerPage ? goldBg : 'transparent'; }}
@@ -96,31 +121,31 @@ export default function Pagination({ currentPage, totalPages, onPageChange, item
             </div>
           )}
         </div>
-        <span>per page</span>
+        <span>/ page</span>
       </div>
 
-      {/* Page buttons */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+      {/* Center: Page buttons */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', justifyContent: 'center' }}>
         {/* Prev */}
         <button
-          onClick={() => { onPageChange(currentPage - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+          onClick={() => goTo(currentPage - 1)}
           disabled={currentPage === 1}
           style={{
             padding: '6px 10px', borderRadius: '4px', border: `1px solid ${border}`,
-            background: 'transparent', color: currentPage === 1 ? (darkTheme ? '#333' : '#ccc') : textMuted,
-            cursor: currentPage === 1 ? 'default' : 'pointer', fontSize: '11px', fontWeight: 600,
-            letterSpacing: '1px', transition: 'all 0.2s'
+            background: 'transparent', color: currentPage === 1 ? disabledColor : textMuted,
+            cursor: currentPage === 1 ? 'default' : 'pointer', fontSize: '14px', fontWeight: 600,
+            transition: 'all 0.2s', lineHeight: 1
           }}
           onMouseEnter={e => { if (currentPage !== 1) { e.currentTarget.style.borderColor = gold; e.currentTarget.style.color = gold; } }}
           onMouseLeave={e => { if (currentPage !== 1) { e.currentTarget.style.borderColor = border; e.currentTarget.style.color = textMuted; } }}
         >
-          ◀
+          ‹
         </button>
 
         {pageNumbers.map((page, idx) => {
           if (page === '...') {
             return (
-              <span key={`dots-${idx}`} style={{ padding: '6px 6px', color: textMuted, fontSize: '12px', letterSpacing: '2px' }}>
+              <span key={`dots-${idx}`} style={{ padding: '6px 4px', color: textMuted, fontSize: '13px', letterSpacing: '2px', userSelect: 'none' }}>
                 ...
               </span>
             );
@@ -129,7 +154,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange, item
           return (
             <button
               key={page}
-              onClick={() => { onPageChange(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              onClick={() => goTo(page)}
               style={{
                 padding: '6px 10px', minWidth: '32px', borderRadius: '4px', border: `1px solid ${isActive ? gold : border}`,
                 background: isActive ? gold : 'transparent',
@@ -147,24 +172,39 @@ export default function Pagination({ currentPage, totalPages, onPageChange, item
 
         {/* Next */}
         <button
-          onClick={() => { onPageChange(currentPage + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+          onClick={() => goTo(currentPage + 1)}
           disabled={currentPage === totalPages}
           style={{
             padding: '6px 10px', borderRadius: '4px', border: `1px solid ${border}`,
-            background: 'transparent', color: currentPage === totalPages ? (darkTheme ? '#333' : '#ccc') : textMuted,
-            cursor: currentPage === totalPages ? 'default' : 'pointer', fontSize: '11px', fontWeight: 600,
-            letterSpacing: '1px', transition: 'all 0.2s'
+            background: 'transparent', color: currentPage === totalPages ? disabledColor : textMuted,
+            cursor: currentPage === totalPages ? 'default' : 'pointer', fontSize: '14px', fontWeight: 600,
+            transition: 'all 0.2s', lineHeight: 1
           }}
           onMouseEnter={e => { if (currentPage !== totalPages) { e.currentTarget.style.borderColor = gold; e.currentTarget.style.color = gold; } }}
           onMouseLeave={e => { if (currentPage !== totalPages) { e.currentTarget.style.borderColor = border; e.currentTarget.style.color = textMuted; } }}
         >
-          ▶
+          ›
         </button>
       </div>
 
-      {/* Page info */}
-      <div style={{ fontSize: '11px', color: textMuted, letterSpacing: '0.5px' }}>
-        Page {currentPage} of {totalPages}
+      {/* Right: Go to page + info */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: textMuted }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span>Go to</span>
+          <input
+            type="number"
+            min={1}
+            max={totalPages}
+            value={goToPage}
+            placeholder={currentPage}
+            onChange={e => setGoToPage(e.target.value)}
+            onKeyDown={handleGoToPage}
+            onFocus={e => e.currentTarget.style.borderColor = gold}
+            onBlur={e => e.currentTarget.style.borderColor = border}
+            style={inputStyle}
+          />
+          <span>of {totalPages}</span>
+        </div>
       </div>
     </div>
   );

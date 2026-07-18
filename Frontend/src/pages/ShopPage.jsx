@@ -20,7 +20,7 @@ export default function ShopPage({ wishlist, setWishlist }) {
   const [sortBy, setSortBy] = useState('Newest First');
   const { showAlert } = useAlert();
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const superCategoryFilter = searchParams.get('superCategory') || '';

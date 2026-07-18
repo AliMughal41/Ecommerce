@@ -19,7 +19,7 @@ export default function AdminCustomers() {
   const [freezingId, setFreezingId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(8);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const fetchData = async () => {
     setLoading(true);

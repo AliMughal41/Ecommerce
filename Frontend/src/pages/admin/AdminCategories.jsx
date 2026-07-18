@@ -25,7 +25,7 @@ export default function AdminCategories() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(8);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
     const [loading, setLoading] = useState(false);
 
     // Modals

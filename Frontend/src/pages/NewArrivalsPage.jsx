@@ -30,7 +30,7 @@ export default function NewArrivalsPage({ wishlist, setWishlist }) {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [selectedImageIdx, setSelectedImageIdx] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
     const navigate = useNavigate();
 
