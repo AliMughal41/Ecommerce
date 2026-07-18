@@ -11,6 +11,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import SubscribeSection from '../components/SubscribeSection';
 import API_URL from '../config';
+import { useProducts } from '../context/ProductsContext';
 
 // Custom Instagram icon component
 const InstagramIcon = ({ size = 24, color = '#d4af37' }) => (
@@ -97,9 +98,9 @@ const scroll = (id, dir) => {
 /* ─── COMPONENT ──────────────────────────────────────────────────────── */
 export default function HomePage({ wishlist, setWishlist }) {
   const navigate = useNavigate();
+  const { products: allProducts, loading: loadingProducts } = useProducts();
   const [arrivedProducts, setArrivedProducts] = useState([]);
   const [reviews, setReviews] = useState([]);
-  const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingReviews, setLoadingReviews] = useState(true);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -107,24 +108,13 @@ export default function HomePage({ wishlist, setWishlist }) {
   const bagContainerRef = useRef(null);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      setLoadingProducts(true);
-      try {
-        const { data } = await axios.get(`${API_URL}/api/products`);
-        if (data.success) {
-          const sorted = [...data.products].sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-          );
-          setArrivedProducts(sorted.slice(0, 9));
-        }
-      } catch (error) {
-        console.error('Error fetching products', error);
-      } finally {
-        setLoadingProducts(false);
-      }
-    };
-    fetchProducts();
-  }, []);
+    if (allProducts.length > 0) {
+      const sorted = [...allProducts].sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+      setArrivedProducts(sorted.slice(0, 9));
+    }
+  }, [allProducts]);
 
   useEffect(() => {
     const fetchReviews = async () => {

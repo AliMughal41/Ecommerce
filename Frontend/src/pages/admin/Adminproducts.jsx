@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import imageCompression from 'browser-image-compression';
 import { useAlert } from '../../context/AlertContext';
+import { useProducts } from '../../context/ProductsContext';
 import {
     LayoutDashboard, Package, Tag, ShoppingCart, Users, Ticket,
     Star, Image, Settings, UserCog, BarChart2, LogOut, Menu, X,
@@ -30,6 +31,7 @@ const labelStyle = { fontSize: '12px', color: '#a09080', marginBottom: '5px', di
 export default function AdminProducts() {
     const navigate = useNavigate();
     const { showAlert } = useAlert();
+    const { refreshProducts } = useProducts();
     const [products, setProducts] = useState(initialProducts);
     const [categories, setCategories] = useState([]);
     const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -114,6 +116,7 @@ export default function AdminProducts() {
             const { data } = await axios.post(`${API_URL}/api/products`, payload, config);
             if (data.success) {
                 setProducts(p => [data.product, ...p]);
+                refreshProducts();
                 setShowAdd(false);
                 setForm(emptyForm);
             }
@@ -187,6 +190,7 @@ export default function AdminProducts() {
             const { data } = await axios.put(`${API_URL}/api/products/${selectedProduct._id}`, payload, config);
             if (data.success) {
                 setProducts(prev => prev.map(p => p._id === selectedProduct._id ? data.product : p));
+                refreshProducts();
                 setShowEdit(false);
             }
         } catch (error) {
@@ -206,6 +210,7 @@ export default function AdminProducts() {
             const { data } = await axios.delete(`${API_URL}/api/products/${selectedProduct._id}`, config);
             if (data.success) {
                 setProducts(p => p.filter(x => x._id !== selectedProduct._id));
+                refreshProducts();
                 setShowDelete(false);
                 setSelectedProduct(null);
             }

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ShoppingBag, ShieldCheck, Tag, Truck, Shield, Lock, Star, Heart, ShoppingCart, Gift, Megaphone, SlidersHorizontal, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ShoppingBag, ShieldCheck, Tag, Truck, Shield, Lock, Star, Heart, ShoppingCart, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -8,9 +8,9 @@ import Footer from '../components/Footer';
 import SubscribeSection from '../components/SubscribeSection';
 import Pagination from '../components/Pagination';
 import { useAlert } from '../context/AlertContext';
+import { useProducts } from '../context/ProductsContext';
 import API_URL from '../config';
 
-const categories = ['All New Arrivals', 'Shoes', 'Bags', 'Travel'];
 const sortOptions = ['Newest First', 'Price: Low to High', 'Price: High to Low', 'Top Rated'];
 
 const features = [
@@ -23,34 +23,22 @@ const features = [
 
 export default function NewArrivalsPage({ wishlist, setWishlist }) {
     const { showAlert } = useAlert();
-
-    const [products, setProducts] = useState([]);
-    const [activeCategory, setActiveCategory] = useState('All New Arrivals');
+    const { products: allProducts } = useProducts();
+    const [activeCategory, setActiveCategory] = useState('All');
     const [sortBy, setSortBy] = useState('Newest First');
-    const [selectedProduct, setSelectedProduct] = useState(null);
-    const [selectedImageIdx, setSelectedImageIdx] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [catDropdownOpen, setCatDropdownOpen] = useState(false);
+  const catDropdownRef = useRef(null);
 
     const navigate = useNavigate();
 
-    // Fetch products from API
     useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                const { data } = await axios.get(`${API_URL}/api/products`);
-                if (data.success) {
-                    // Sort by newest first (createdAt descending)
-                    const sorted = [...data.products].sort(
-                        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-                    );
-                    setProducts(sorted);
-                }
-            } catch (error) {
-                console.error('Error fetching products', error);
-            }
+        const handleClickOutside = (e) => {
+            if (catDropdownRef.current && !catDropdownRef.current.contains(e.target)) setCatDropdownOpen(false);
         };
-        fetchProducts();
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     useEffect(() => {
@@ -100,11 +88,12 @@ export default function NewArrivalsPage({ wishlist, setWishlist }) {
         localStorage.setItem('thriftora_cart', JSON.stringify(updatedCart));
         window.dispatchEvent(new Event('cart-updated'));
         showAlert({ type: 'success', message: `${product.name} added to Cart!` });
-        setSelectedProduct(null);
     };
 
-    const filtered = products.filter(p => {
-        const catOk = activeCategory === 'All New Arrivals' || p.category === activeCategory;
+    const categoryNames = ['All', ...new Set(allProducts.map(p => p.category).filter(Boolean))];
+
+    const filtered = allProducts.filter(p => {
+        const catOk = activeCategory === 'All' || p.category === activeCategory;
         return catOk;
     });
 
@@ -228,21 +217,56 @@ export default function NewArrivalsPage({ wishlist, setWishlist }) {
 
             {/* ── FILTER BAR ── */}
             <div className="container-fluid px-3 px-md-4 py-4">
-                <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-3" style={{ borderBottom: '1px solid #3d3020' }}>
-                    <div className="d-flex gap-3 flex-wrap">
-                        {categories.map(cat => (
-                            <button key={cat} onClick={() => setActiveCategory(cat)}
-                                className="btn fw-semibold text-uppercase"
+                <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-3 filter-bar-mobile" style={{ borderBottom: '1px solid #3d3020' }}>
+                    <div className="d-flex gap-3 flex-wrap align-items-center">
+                        {/* Categories Dropdown */}
+                        <div ref={catDropdownRef} style={{ position: 'relative' }}>
+                            <button onClick={() => setCatDropdownOpen(!catDropdownOpen)}
+                                className="btn fw-semibold text-uppercase d-flex align-items-center gap-2"
                                 style={{
                                     fontSize: '13px', letterSpacing: '1px',
-                                    background: activeCategory === cat ? '#b89456' : 'transparent',
-                                    color: activeCategory === cat ? '#0a0a0a' : '#8a7a6a',
-                                    border: `1px solid ${activeCategory === cat ? '#b89456' : '#3d3020'}`,
+                                    background: catDropdownOpen ? '#b89456' : 'transparent',
+                                    color: catDropdownOpen ? '#0a0a0a' : '#8a7a6a',
+                                    border: `1px solid ${catDropdownOpen ? '#b89456' : '#3d3020'}`,
                                     borderRadius: '3px', padding: '8px 24px'
                                 }}>
-                                {cat}
+                                Categories <ChevronDown size={14} style={{ transform: catDropdownOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
                             </button>
-                        ))}
+                            {catDropdownOpen && (
+                                <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: '4px', background: '#1a1410', border: '1px solid #3d3020', borderRadius: '4px', minWidth: '200px', zIndex: 100, maxHeight: '300px', overflowY: 'auto' }}>
+                                    {categoryNames.map(cat => (
+                                        <button key={cat} onClick={() => { setActiveCategory(cat); setCatDropdownOpen(false); }}
+                                            className="w-100 text-start px-3 py-2 border-0"
+                                            style={{
+                                                fontSize: '13px', letterSpacing: '0.5px', cursor: 'pointer',
+                                                background: activeCategory === cat ? '#b89456' : 'transparent',
+                                                color: activeCategory === cat ? '#0a0a0a' : '#d1c7bc',
+                                                transition: 'background 0.2s'
+                                            }}
+                                            onMouseEnter={e => { if (activeCategory !== cat) e.currentTarget.style.background = 'rgba(184,148,86,0.15)'; }}
+                                            onMouseLeave={e => { if (activeCategory !== cat) e.currentTarget.style.background = 'transparent'; }}>
+                                            {cat}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Page Links */}
+                        <button onClick={() => navigate('/bags')}
+                            className="btn fw-semibold text-uppercase"
+                            style={{ fontSize: '13px', letterSpacing: '1px', background: 'transparent', color: '#8a7a6a', border: '1px solid #3d3020', borderRadius: '3px', padding: '8px 24px', transition: 'all 0.2s' }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = '#b89456'; e.currentTarget.style.color = '#b89456'; }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = '#3d3020'; e.currentTarget.style.color = '#8a7a6a'; }}>
+                            Bags
+                        </button>
+                        <button onClick={() => navigate('/jewellery')}
+                            className="btn fw-semibold text-uppercase"
+                            style={{ fontSize: '13px', letterSpacing: '1px', background: 'transparent', color: '#8a7a6a', border: '1px solid #3d3020', borderRadius: '3px', padding: '8px 24px', transition: 'all 0.2s' }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = '#b89456'; e.currentTarget.style.color = '#b89456'; }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = '#3d3020'; e.currentTarget.style.color = '#8a7a6a'; }}>
+                            Jewellery
+                        </button>
                     </div>
                     <div className="d-flex gap-3 align-items-center flex-wrap">
                         <select value={sortBy} onChange={e => setSortBy(e.target.value)}
@@ -283,16 +307,16 @@ export default function NewArrivalsPage({ wishlist, setWishlist }) {
                                     </div>
                                 )}
 
-                                <div className="shop-product-img" style={{ height: '220px', background: '#e5e5e5', overflow: 'hidden' }} onClick={() => { setSelectedProduct(p); setSelectedImageIdx(0); }}>
+                                <div className="shop-product-img" style={{ height: '220px', background: '#e5e5e5', overflow: 'hidden' }} onClick={() => navigate(`/product/${getProductId(p)}`)}>
                                     <img src={p.mainImage} alt={p.name} className="w-100 h-100" style={{ objectFit: 'cover', transition: 'transform 0.4s' }}
                                         onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.06)'}
                                         onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'} />
                                 </div>
 
                                 {/* Card Body */}
-                                <div className="p-3 text-center shop-card-buttons" style={{ background: '#141010' }} onClick={() => { setSelectedProduct(p); setSelectedImageIdx(0); }}>
+                                <div className="p-3 text-center shop-card-buttons" style={{ background: '#141010' }} onClick={() => navigate(`/product/${getProductId(p)}`)}>
                                     <div className="text-white fw-bold mb-1" style={{ fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
-                                    <div className="mb-2" style={{ fontSize: '12px', color: '#8a8a8a' }}>Category: {p.category}</div>
+                                    <div className="mb-2" style={{ fontSize: '12px', color: '#c9a84c', letterSpacing: '0.5px' }}>Click to view details</div>
                                     <div className="d-flex align-items-center justify-content-center gap-1 mb-2">
                                         {[1, 2, 3, 4, 5].map(s => <Star key={s} size={12} fill={s <= Math.round(p.rating || 4) ? '#c9a84c' : 'none'} color="#c9a84c" />)}
                                     </div>
@@ -338,145 +362,7 @@ export default function NewArrivalsPage({ wishlist, setWishlist }) {
                 )}
             </div>
 
-         {/* ── PROMO CARDS ── */}
-<section className="py-4 px-3 px-md-4" style={{ background: '#0a0a0a', borderTop: '1px solid #2a1f10', borderBottom: '1px solid #2a1f10' }}>
-    <div className="row g-3">
-
-        {/* Card 1 — Luxury Handbags */}
-        <div className="col-12 col-md-4">
-            <div className="position-relative overflow-hidden d-flex align-items-center gap-3 p-3 h-100"
-                style={{ background: '#0f0c09', border: '1px solid #2a1f10', borderRadius: '4px', cursor: 'pointer', transition: 'border-color 0.2s', minHeight: '110px' }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = '#b89456'}
-                onMouseLeave={e => e.currentTarget.style.borderColor = '#2a1f10'}
-            >
-                <div className="d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '54px', height: '54px', border: '1px solid #b89456', borderRadius: '50%' }}>
-                    <Gift size={24} style={{ color: '#b89456' }} strokeWidth={1.4} />
-                </div>
-                <div style={{ flex: 1 }}>
-                    <div className="fw-bold text-white text-uppercase mb-1" style={{ fontSize: '15px', letterSpacing: '1px' }}>LUXURY HANDBAGS</div>
-                    <div className="text-secondary mb-2" style={{ fontSize: '12px' }}>Premium Collection<br />Timeless Elegance</div>
-                    <button className="btn fw-bold text-uppercase px-3 py-1"
-                        style={{ background: 'transparent', border: '1px solid #b89456', color: '#b89456', fontSize: '10px', letterSpacing: '1.5px', borderRadius: '2px' }}
-                        onClick={() => navigate('/shop')}>
-                        EXPLORE
-                    </button>
-                </div>
-                <img
-                    src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=120&h=100&fit=crop"
-                    alt=""
-                    className="position-absolute end-0 bottom-0"
-                    style={{ width: '100px', height: '80px', objectFit: 'cover', opacity: 0.25 }}
-                />
             </div>
-        </div>
-
-        {/* Card 2 — Fine Jewellery */}
-        <div className="col-12 col-md-4">
-            <div className="position-relative overflow-hidden d-flex align-items-center gap-3 p-3 h-100"
-                style={{ background: '#0f0c09', border: '1px solid #2a1f10', borderRadius: '4px', cursor: 'pointer', transition: 'border-color 0.2s', minHeight: '110px' }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = '#b89456'}
-                onMouseLeave={e => e.currentTarget.style.borderColor = '#2a1f10'}
-            >
-                <div className="d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '54px', height: '54px', border: '1px solid #b89456', borderRadius: '50%' }}>
-                    <Tag size={24} style={{ color: '#b89456' }} strokeWidth={1.4} />
-                </div>
-                <div style={{ flex: 1 }}>
-                    <div className="fw-bold text-white text-uppercase mb-1" style={{ fontSize: '15px', letterSpacing: '1px' }}>FINE JEWELLERY</div>
-                    <div className="text-secondary mb-2" style={{ fontSize: '12px' }}>Diamond & Gold<br />Exquisite Craftsmanship</div>
-                    <button className="btn fw-bold text-uppercase px-3 py-1"
-                        style={{ background: 'transparent', border: '1px solid #b89456', color: '#b89456', fontSize: '10px', letterSpacing: '1.5px', borderRadius: '2px' }}
-                        onClick={() => navigate('/shop')}>
-                        EXPLORE
-                    </button>
-                </div>
-                <img
-                    src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=120&h=100&fit=crop"
-                    alt=""
-                    className="position-absolute end-0 bottom-0"
-                    style={{ width: '90px', height: '80px', objectFit: 'cover', opacity: 0.22 }}
-                />
-            </div>
-        </div>
-
-        {/* Card 3 — Gift Sets */}
-        <div className="col-12 col-md-4">
-            <div className="position-relative overflow-hidden d-flex align-items-center gap-3 p-3 h-100"
-                style={{ background: '#0f0c09', border: '1px solid #2a1f10', borderRadius: '4px', cursor: 'pointer', transition: 'border-color 0.2s', minHeight: '110px' }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = '#b89456'}
-                onMouseLeave={e => e.currentTarget.style.borderColor = '#2a1f10'}
-            >
-                <div className="d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '54px', height: '54px', border: '1px solid #b89456', borderRadius: '50%' }}>
-                    <Megaphone size={24} style={{ color: '#b89456' }} strokeWidth={1.4} />
-                </div>
-                <div style={{ flex: 1 }}>
-                    <div className="fw-bold text-white text-uppercase mb-1" style={{ fontSize: '15px', letterSpacing: '1px' }}>GIFT SETS</div>
-                    <div className="text-secondary mb-2" style={{ fontSize: '12px' }}>Perfect For Every<br />Special Occasion</div>
-                    <button className="btn fw-bold text-uppercase px-3 py-1"
-                        style={{ background: 'transparent', border: '1px solid #b89456', color: '#b89456', fontSize: '10px', letterSpacing: '1.5px', borderRadius: '2px' }}
-                        onClick={() => navigate('/shop')}>
-                        EXPLORE
-                    </button>
-                </div>
-                <img
-                    src="https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=120&h=100&fit=crop"
-                    alt=""
-                    className="position-absolute end-0 bottom-0"
-                    style={{ width: '100px', height: '80px', objectFit: 'cover', opacity: 0.22 }}
-                />
-            </div>
-        </div>
-
-    </div>
-</section>
-
-            {/* ── PRODUCT DETAILS MODAL ── */}
-            {selectedProduct && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
-                    onClick={e => { if (e.target === e.currentTarget) setSelectedProduct(null); }}>
-                    <div style={{ background: '#0f0c09', border: '1px solid #3d3020', borderRadius: '8px', width: '100%', maxWidth: '900px', display: 'flex', flexDirection: 'column', maxHeight: '90vh', overflow: 'hidden', position: 'relative' }}>
-                        <button onClick={() => setSelectedProduct(null)} style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 10 }}>
-                            <X size={18} />
-                        </button>
-                        <div className="row g-0 h-100" style={{ overflowY: 'auto' }}>
-                            <div className="col-md-6 p-4" style={{ background: '#141010', borderRight: '1px solid #2a1f10' }}>
-                                <img src={selectedProduct.images?.[selectedImageIdx]?.url || selectedProduct.mainImage} alt={selectedProduct.name} style={{ width: '100%', height: 'auto', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '4px', border: '1px solid #2a1f10', marginBottom: '16px' }} />
-                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                    {selectedProduct.images?.map((img, idx) => (
-                                        <img key={idx} src={img.url} alt="" onClick={() => setSelectedImageIdx(idx)} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px', border: selectedImageIdx === idx ? '2px solid #c9a84c' : '1px solid #3d3020', cursor: 'pointer', opacity: selectedImageIdx === idx ? 1 : 0.6, transition: 'all 0.2s' }} />
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="col-md-6 p-4 p-md-5 d-flex flex-column justify-content-center">
-                                <div style={{ fontSize: '12px', color: '#c9a84c', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '8px', fontWeight: 600 }}>{selectedProduct.category}</div>
-                                <h2 style={{ fontSize: '28px', fontWeight: 700, color: '#fff', marginBottom: '12px', lineHeight: 1.2 }}>{selectedProduct.name}</h2>
-                                <div className="d-flex align-items-center gap-1 mb-4">
-                                    {[1, 2, 3, 4, 5].map(s => <Star key={s} size={14} fill={s <= Math.round(selectedProduct.rating || 4) ? '#c9a84c' : 'none'} color="#c9a84c" />)}
-                                    <span style={{ fontSize: '13px', color: '#8a7a6a', marginLeft: '8px' }}>(4.0 Reviews)</span>
-                                </div>
-                                <div className="d-flex align-items-center gap-3 mb-4">
-                                    <span style={{ fontSize: '24px', fontWeight: 700, color: '#c9a84c' }}>Rs. {selectedProduct.salePrice ? selectedProduct.salePrice.toLocaleString() : selectedProduct.price.toLocaleString()}</span>
-                                    {selectedProduct.salePrice && <span className="text-decoration-line-through" style={{ fontSize: '16px', color: '#555' }}>Rs. {selectedProduct.price.toLocaleString()}</span>}
-                                </div>
-                                <div style={{ background: '#1a1410', border: '1px solid #2a1f10', borderRadius: '4px', padding: '16px', marginBottom: '24px' }}>
-                                    <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#fff', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Description</h4>
-                                    <p style={{ fontSize: '14px', color: '#a09080', lineHeight: 1.6, margin: 0 }}>{selectedProduct.description}</p>
-                                </div>
-                                <div className="d-flex gap-3 mt-auto">
-                                    <button onClick={() => addToCartWithoutRedirect(selectedProduct)} className="btn d-flex align-items-center justify-content-center gap-2 flex-grow-1" style={{ background: '#c9a84c', color: '#0a0a0a', border: 'none', padding: '14px', borderRadius: '4px', fontWeight: 700, fontSize: '14px', letterSpacing: '0.5px' }}>
-                                        <ShoppingCart size={18} /> ADD TO CART
-                                    </button>
-                                    <button onClick={() => {
-                                        toggleWishlist(selectedProduct);
-                                        setSelectedProduct(null);
-                                    }} className="btn d-flex align-items-center justify-content-center" style={{ width: '52px', background: 'transparent', border: '1px solid #3d3020', borderRadius: '4px', color: isWishlisted(getProductId(selectedProduct)) ? '#e74c3c' : '#fff' }}>
-                                        <Heart size={20} fill={isWishlisted(getProductId(selectedProduct)) ? '#e74c3c' : 'none'} />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             <SubscribeSection
                 title="GET EXCLUSIVE DROPS & OFFERS!"

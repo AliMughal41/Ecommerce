@@ -7,14 +7,15 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Pagination from '../components/Pagination';
 import { useAlert } from '../context/AlertContext';
+import { useProducts } from '../context/ProductsContext';
 import API_URL from '../config';
 
 const sortOptions = ['Newest First', 'Price: Low to High', 'Price: High to Low', 'Top Rated'];
 
 export default function BagsPage({ wishlist, setWishlist }) {
+  const { products: allProducts, loading } = useProducts();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
   const [sortBy, setSortBy] = useState('Newest First');
   const { showAlert } = useAlert();
@@ -34,33 +35,27 @@ export default function BagsPage({ wishlist, setWishlist }) {
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
       try {
-        const [productsRes, categoriesRes, superCatRes] = await Promise.all([
-          axios.get(`${API_URL}/api/products`),
+        const [categoriesRes, superCatRes] = await Promise.all([
           axios.get(`${API_URL}/api/categories`),
           axios.get(`${API_URL}/api/super-categories`),
         ]);
-        if (productsRes.data.success) {
-          const allProducts = productsRes.data.products;
-          const superCat = superCatRes.data.superCategories?.find(s => s.name.toLowerCase() === 'bags');
-          if (superCat) {
-            const bagsCategories = categoriesRes.data.categories
-              .filter(c => c.superCategory?._id === superCat._id)
-              .map(c => c.name);
-            const filtered = allProducts.filter(p => bagsCategories.includes(p.category));
-            setProducts(filtered);
-          }
-          setCategories(categoriesRes.data.categories || []);
+        if (categoriesRes.data.success) setCategories(categoriesRes.data.categories || []);
+        const superCat = superCatRes.data.superCategories?.find(s => s.name.toLowerCase() === 'bags');
+        if (superCat) {
+          const bagsCategories = (categoriesRes.data.categories || [])
+            .filter(c => c.superCategory?._id === superCat._id)
+            .map(c => c.name);
+          setProducts(allProducts.filter(p => bagsCategories.includes(p.category)));
+        } else {
+          setProducts(allProducts);
         }
       } catch (error) {
         console.error('Error fetching data', error);
-      } finally {
-        setLoading(false);
       }
     };
     fetchData();
-  }, []);
+  }, [allProducts]);
 
   useEffect(() => { setCurrentPage(1); }, [activeCategory, sortBy]);
 

@@ -7,15 +7,15 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Pagination from '../components/Pagination';
 import { useAlert } from '../context/AlertContext';
+import { useProducts } from '../context/ProductsContext';
 import API_URL from '../config';
 
 const sortOptions = ['Newest First', 'Price: Low to High', 'Price: High to Low', 'Top Rated'];
 
 export default function ShopPage({ wishlist, setWishlist }) {
-  const [products, setProducts] = useState([]);
+  const { products, loading } = useProducts();
   const [categories, setCategories] = useState([]);
   const [superCategories, setSuperCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
   const [sortBy, setSortBy] = useState('Newest First');
   const { showAlert } = useAlert();
@@ -38,20 +38,15 @@ export default function ShopPage({ wishlist, setWishlist }) {
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
       try {
-        const [productsRes, categoriesRes, superCatRes] = await Promise.all([
-          axios.get(`${API_URL}/api/products`),
+        const [categoriesRes, superCatRes] = await Promise.all([
           axios.get(`${API_URL}/api/categories`),
           axios.get(`${API_URL}/api/super-categories`),
         ]);
-        if (productsRes.data.success) setProducts(productsRes.data.products);
         if (categoriesRes.data.success) setCategories(categoriesRes.data.categories);
         if (superCatRes.data.success) setSuperCategories(superCatRes.data.superCategories);
       } catch (error) {
         console.error('Error fetching data', error);
-      } finally {
-        setLoading(false);
       }
     };
     fetchData();

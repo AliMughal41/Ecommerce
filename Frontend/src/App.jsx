@@ -34,6 +34,7 @@ import NotFoundPage from './pages/NotFoundPage.jsx'
 
 import CustomerAuthProvider from './context/CustomerAuthContext'
 import AlertProvider from './context/AlertContext'
+import ProductsProvider from './context/ProductsContext'
 import CustomerLogin from './pages/CustomerLogin'
 import CustomerRegister from './pages/CustomerRegister'
 import ForgotPassword from './pages/ForgotPassword'
@@ -130,6 +131,7 @@ function App() {
   return (
     <CustomerAuthProvider>
     <AlertProvider>
+    <ProductsProvider>
     <BrowserRouter>
       <ScrollToTop />
       <Routes>
@@ -241,6 +243,7 @@ function App() {
       </Routes>
       <FloatingWhatsApp />
     </BrowserRouter>
+    </ProductsProvider>
     </AlertProvider>
     </CustomerAuthProvider>
   )
