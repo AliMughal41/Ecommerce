@@ -610,7 +610,7 @@ export default function HomePage({ wishlist, setWishlist }) {
               
               <div id="arrived" className="d-flex gap-4 overflow-auto scroll-section" style={{ scrollBehavior: 'smooth', scrollbarWidth: 'none', msOverflowStyle: 'none', padding: '20px 0' }}>
                 {arrivedProducts.map((p) => (
-                  <div key={p.id} className="product-card flex-shrink-0 overflow-hidden rounded-4" style={{ width: '260px', cursor: 'pointer' }} onClick={() => navigate('/shop')}>
+                  <div key={p.id} className="product-card flex-shrink-0 overflow-hidden rounded-4" style={{ width: '260px', cursor: 'pointer' }} onClick={() => navigate(`/shop?highlight=${p._id || p.id}`)}>
                     <div className="position-relative" style={{ height: '260px', background: 'rgba(255,255,255,0.02)', overflow: 'hidden' }}>
                       <img src={p.mainImage} alt={p.name} className="product-image w-100 h-100 object-fit-contain p-3" />
                       <button

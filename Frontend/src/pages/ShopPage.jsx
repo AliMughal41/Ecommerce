@@ -23,6 +23,7 @@ export default function ShopPage({ wishlist, setWishlist }) {
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const highlightId = searchParams.get('highlight') || '';
   const superCategoryFilter = searchParams.get('superCategory') || '';
   const [catDropdownOpen, setCatDropdownOpen] = useState(false);
   const catDropdownRef = useRef(null);
@@ -59,6 +60,27 @@ export default function ShopPage({ wishlist, setWishlist }) {
   useEffect(() => {
     setCurrentPage(1);
   }, [activeCategory, sortBy, superCategoryFilter]);
+
+  useEffect(() => {
+    if (loading || !highlightId || products.length === 0) return;
+    const filtered = products.filter(p => activeCategory === 'All' || p.category === activeCategory);
+    const sorted = [...filtered].sort((a, b) => {
+      const getPrice = (p) => p.salePrice || p.price;
+      if (sortBy === 'Price: Low to High') return getPrice(a) - getPrice(b);
+      if (sortBy === 'Price: High to Low') return getPrice(b) - getPrice(a);
+      if (sortBy === 'Top Rated') return (b.rating || 0) - (a.rating || 0);
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+    const idx = sorted.findIndex(p => (p._id || p.id) === highlightId);
+    if (idx >= 0) {
+      const page = Math.floor(idx / itemsPerPage) + 1;
+      setCurrentPage(page);
+      setTimeout(() => {
+        const el = document.getElementById(`product-${highlightId}`);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 400);
+    }
+  }, [loading, highlightId, products]);
 
   const getProductId = (product) => product._id || product.id || product.name || '';
 
@@ -363,7 +385,7 @@ export default function ShopPage({ wishlist, setWishlist }) {
         ) : (
         <div className="row g-3 g-md-4">
           {paginatedProducts.map(p => (
-            <div key={p._id || p.id} className="col-6 col-md-4 col-lg-3">
+            <div key={p._id || p.id} id={`product-${p._id || p.id}`} className="col-6 col-md-4 col-lg-3">
               <div className="h-100 overflow-hidden position-relative"
                 style={{ background: '#141010', cursor: 'pointer', transition: 'transform 0.25s', border: '1px solid #2a1f10', borderRadius: '4px' }}
                 onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.borderColor = '#c9a84c'; }}

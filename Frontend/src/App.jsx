@@ -53,10 +53,12 @@ import './App.css'
 import API_URL from './config'
 
 function ScrollToTop() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   useEffect(() => {
+    const params = new URLSearchParams(search);
+    if (params.get('highlight')) return;
     window.scrollTo(0, 0);
-  }, [pathname]);
+  }, [pathname, search]);
   return null;
 }
 
