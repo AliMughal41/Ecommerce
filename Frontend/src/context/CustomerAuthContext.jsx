@@ -70,6 +70,18 @@ const CustomerAuthProvider = ({ children }) => {
     }
   };
 
+  const googleLogin = async (credential) => {
+    try {
+      const { data } = await axios.post(`${API}/customer/google-auth`, { credential });
+      localStorage.setItem('customerToken', data.token);
+      setToken(data.token);
+      await fetchProfile(data.token);
+      return data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Google authentication failed');
+    }
+  };
+
   const register = async (formData) => {
     try {
       const { data } = await axios.post(`${API}/customer/register`, formData);
@@ -166,6 +178,7 @@ const CustomerAuthProvider = ({ children }) => {
         token,
         loading,
         login,
+        googleLogin,
         register,
         verifyRegistration,
         logout,

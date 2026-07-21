@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, ArrowLeft, Mail, CheckCircle } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { useAlert } from '../context/AlertContext';
 import Navbar from '../components/Navbar';
@@ -8,7 +9,7 @@ import Footer from '../components/Footer';
 
 const CustomerRegister = () => {
   const navigate = useNavigate();
-  const { register, verifyRegistration } = useCustomerAuth();
+  const { register, verifyRegistration, googleLogin } = useCustomerAuth();
   const { showAlert } = useAlert();
   const [step, setStep] = useState('form');
   const [formData, setFormData] = useState({
@@ -284,6 +285,34 @@ const CustomerRegister = () => {
                     }}>
                       {loading ? 'Sending OTP...' : 'Verify Email'}
                     </button>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', margin: '24px 0' }}>
+                      <div style={{ flex: 1, height: '1px', backgroundColor: '#3d3020' }} />
+                      <span style={{ color: '#888', fontSize: '13px', whiteSpace: 'nowrap' }}>OR</span>
+                      <div style={{ flex: 1, height: '1px', backgroundColor: '#3d3020' }} />
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                      <GoogleLogin
+                        onSuccess={async (credentialResponse) => {
+                          try {
+                            await googleLogin(credentialResponse.credential);
+                            showAlert({ type: 'success', message: 'Account created successfully with Google! Welcome to Velnora.' });
+                            navigate('/');
+                          } catch (err) {
+                            showAlert({ type: 'error', message: err.message || 'Google sign-in failed.' });
+                          }
+                        }}
+                        onError={() => {
+                          showAlert({ type: 'error', message: 'Google sign-in was cancelled or failed.' });
+                        }}
+                        size="large"
+                        width="100%"
+                        theme="outline"
+                        text="signup_with"
+                        shape="rectangular"
+                      />
+                    </div>
                   </form>
                 </>
               ) : (

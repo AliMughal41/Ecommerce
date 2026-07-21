@@ -362,10 +362,8 @@ export default function NewArrivalsPage({ wishlist, setWishlist }) {
                 )}
             </div>
 
-            </div>
-
             <SubscribeSection
-                title="GET EXCLUSIVE DROPS & OFFERS!"
+                title={"GET EXCLUSIVE DROPS AND OFFERS!"}
                 subtitle="Subscribe to get early access to new arrivals and special discounts."
                 buttonText="SUBSCRIBE"
             />

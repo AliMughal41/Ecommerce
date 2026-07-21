@@ -1,7 +1,10 @@
 const Customer = require('../models/Customer');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const { OAuth2Client } = require('google-auth-library');
 const { sendEmail } = require('../config/resend');
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // ─── Helper: Generate cryptographically secure OTP ──────────────────────────
 const generateOtp = () => {
@@ -232,6 +235,65 @@ const loginCustomer = async (req, res) => {
   } catch (error) {
     console.error('Login error:', error.message);
     res.status(500).json({ success: false, message: 'Login failed. Please try again.' });
+  }
+};
+
+// ─── Google Sign-In ─────────────────────────────────────────────────────────
+const googleAuth = async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({ success: false, message: 'Google credential is required.' });
+    }
+
+    // Verify the Google ID token server-side
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { sub: googleId, email, given_name: firstName, family_name: lastName, picture } = payload;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Google account must have an email.' });
+    }
+
+    // Check if customer already exists with this Google ID
+    let customer = await Customer.findOne({ googleId }).select('+googleId');
+
+    if (!customer) {
+      // Check if customer exists with this email (local auth)
+      customer = await Customer.findOne({ email: email.toLowerCase() }).select('+password +googleId');
+
+      if (customer) {
+        // Link Google account to existing local account
+        customer.googleId = googleId;
+        customer.authProvider = 'google';
+        customer.isVerified = true;
+        if (picture && (!customer.avatar || !customer.avatar.url)) {
+          customer.avatar = { public_id: '', url: picture };
+        }
+        await customer.save();
+      } else {
+        // Create new customer
+        customer = await Customer.create({
+          firstName: (firstName || '').trim() || 'User',
+          lastName: (lastName || '').trim(),
+          email: email.toLowerCase(),
+          googleId,
+          authProvider: 'google',
+          isVerified: true,
+          avatar: { public_id: '', url: picture || '' },
+        });
+      }
+    }
+
+    sendToken(customer, 200, res);
+  } catch (error) {
+    console.error('Google auth error:', error.message);
+    res.status(401).json({ success: false, message: 'Google authentication failed. Please try again.' });
   }
 };
 
@@ -472,6 +534,7 @@ module.exports = {
   registerCustomer,
   verifyRegistrationOtp,
   loginCustomer,
+  googleAuth,
   logoutCustomer,
   getCustomerProfile,
   updateProfile,

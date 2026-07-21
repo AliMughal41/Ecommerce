@@ -26,9 +26,17 @@ const customerSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'Please enter a password'],
     minlength: [6, 'Password must be longer than 6 characters'],
     select: false,
+  },
+  googleId: {
+    type: String,
+    select: false,
+  },
+  authProvider: {
+    type: String,
+    enum: ['local', 'google'],
+    default: 'local',
   },
   avatar: {
     public_id: {
@@ -77,7 +85,7 @@ const customerSchema = new mongoose.Schema({
 
 // Encrypting password before saving
 customerSchema.pre('save', async function () {
-  if (!this.isModified('password')) {
+  if (!this.isModified('password') || !this.password) {
     return;
   }
   this.password = await bcrypt.hash(this.password, 10);
@@ -92,6 +100,7 @@ customerSchema.methods.getJwtToken = function () {
 
 // Compare user password
 customerSchema.methods.comparePassword = async function (enteredPassword) {
+  if (!this.password) return false;
   return await bcrypt.compare(enteredPassword, this.password);
 };
 

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 import HomePage from './pages/HomePage'
 import ShopPage from './pages/ShopPage'
 import BagsPage from './pages/BagsPage'
@@ -129,6 +130,7 @@ function App() {
   };
 
   return (
+    <GoogleOAuthProvider clientId="175615431097-c9rndea8bkclhgm6klo5jbehpljjl5r3.apps.googleusercontent.com">
     <CustomerAuthProvider>
     <AlertProvider>
     <ProductsProvider>
@@ -246,6 +248,7 @@ function App() {
     </ProductsProvider>
     </AlertProvider>
     </CustomerAuthProvider>
+    </GoogleOAuthProvider>
   )
 }
 

@@ -4,6 +4,7 @@ const {
   registerCustomer,
   verifyRegistrationOtp,
   loginCustomer,
+  googleAuth,
   logoutCustomer,
   getCustomerProfile,
   updateProfile,
@@ -18,6 +19,7 @@ const { verifyCustomer } = require('../middleware/auth');
 router.post('/register', registerCustomer);
 router.post('/verify-registration', verifyRegistrationOtp);
 router.post('/login', loginCustomer);
+router.post('/google-auth', googleAuth);
 router.post('/forgot-password', forgotPassword);
 router.post('/verify-reset-otp', verifyResetOtp);
 router.post('/reset-password', resetPassword);

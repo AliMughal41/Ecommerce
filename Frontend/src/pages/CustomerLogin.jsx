@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, LogIn, Loader2 } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
@@ -8,7 +9,7 @@ import { useAlert } from '../context/AlertContext';
 
 const CustomerLogin = () => {
   const navigate = useNavigate();
-  const { login, customer } = useCustomerAuth();
+  const { login, customer, googleLogin } = useCustomerAuth();
   const { showAlert } = useAlert();
 
   const [email, setEmail] = useState('');
@@ -313,6 +314,34 @@ const CustomerLogin = () => {
                   )}
                 </button>
               </form>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', margin: '24px 0' }}>
+                <div style={{ flex: 1, height: '1px', backgroundColor: '#333' }} />
+                <span style={{ color: '#666', fontSize: '13px', whiteSpace: 'nowrap' }}>OR</span>
+                <div style={{ flex: 1, height: '1px', backgroundColor: '#333' }} />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <GoogleLogin
+                  onSuccess={async (credentialResponse) => {
+                    try {
+                      await googleLogin(credentialResponse.credential);
+                      showAlert({ type: 'success', message: 'Login successful! Redirecting...' });
+                      setTimeout(() => navigate('/'), 1000);
+                    } catch (err) {
+                      setError(err.message || 'Google sign-in failed.');
+                    }
+                  }}
+                  onError={() => {
+                    setError('Google sign-in was cancelled or failed.');
+                  }}
+                  size="large"
+                  width="100%"
+                  theme="outline"
+                  text="signin_with"
+                  shape="rectangular"
+                />
+              </div>
 
               <div className="text-center mt-4">
                 <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>
