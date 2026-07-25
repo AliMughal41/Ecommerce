@@ -9,7 +9,7 @@ const isValidBase64Image = (str) => {
   return /^data:image\/(jpeg|jpg|png|webp);base64,/.test(str);
 };
 
-const ALLOWED_FIELDS = ['name', 'category', 'price', 'salePrice', 'stock', 'description', 'status'];
+const ALLOWED_FIELDS = ['name', 'category', 'price', 'salePrice', 'stock', 'description', 'status', 'collection'];
 
 exports.newProduct = async (req, res) => {
   try {

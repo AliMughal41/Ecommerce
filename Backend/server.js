@@ -140,6 +140,7 @@ const superCategoryRoutes = require('./routes/superCategoryRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const returnRoutes = require('./routes/returnRoutes');
 const deliveredOrderRoutes = require('./routes/deliveredOrderRoutes');
+const collectionRoutes = require('./routes/collectionRoutes');
 
 // ─── Use Routes ────────────────────────────────────────────────────────────
 app.use('/api/auth', authLimiter, authRoutes);
@@ -158,6 +159,7 @@ app.use('/api/super-categories', superCategoryRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/returns', returnRoutes);
 app.use('/api/delivered-orders', deliveredOrderRoutes);
+app.use('/api/collections', collectionRoutes);
 
 // ─── Health Check ──────────────────────────────────────────────────────────
 app.get('/', (req, res) => {

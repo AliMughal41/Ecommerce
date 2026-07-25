@@ -31,6 +31,8 @@ import AdminReports from './pages/admin/AdminReports.jsx'
 import AdminReturns from './pages/admin/AdminReturns.jsx'
 import AdminCreateReturn from './pages/admin/AdminCreateReturn.jsx'
 import AdminDeliveredOrders from './pages/admin/AdminDeliveredOrders.jsx'
+import AdminCollections from './pages/admin/AdminCollections.jsx'
+import CollectionDetailPage from './pages/CollectionDetailPage.jsx'
 import NotFoundPage from './pages/NotFoundPage.jsx'
 
 import CustomerAuthProvider from './context/CustomerAuthContext'
@@ -214,6 +216,12 @@ function App() {
             <Adminproducts />
           </ProtectedRoute>
         } />
+        <Route path="/admin-collections" element={
+          <ProtectedRoute>
+            <AdminCollections />
+          </ProtectedRoute>
+        } />
+        <Route path="/collection/:id" element={<CollectionDetailPage />} />
         <Route path="/wishlist" element={
           <WishlistPage
             wishlistItems={wishlist}

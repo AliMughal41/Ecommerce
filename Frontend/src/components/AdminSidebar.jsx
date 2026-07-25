@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Package, Tag, Layers, ShoppingCart, Users,
-  Star, UserCog, LogOut, X, ChevronRight, BarChart3, RotateCcw, PlusCircle, PackageCheck
+  Star, UserCog, LogOut, X, ChevronRight, BarChart3, RotateCcw, PlusCircle, PackageCheck, Bookmark
 } from 'lucide-react';
 
 const SIDEBAR_WIDTH = 260;
@@ -10,6 +10,7 @@ const SIDEBAR_WIDTH = 260;
 const sidebarLinks = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/admin-dashboard' },
   { icon: Package, label: 'Products', path: '/adminproducts' },
+  { icon: Bookmark, label: 'Collections', path: '/admin-collections' },
   { icon: Tag, label: 'Categories', path: '/admin-categories' },
   { icon: Layers, label: 'Super Categories', path: '/admin-super-categories' },
   { icon: ShoppingCart, label: 'Orders', path: '/admin-orders' },

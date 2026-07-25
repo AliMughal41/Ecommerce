@@ -35,6 +35,11 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please enter product description'],
   },
+  collection: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Collection',
+    default: null,
+  },
   images: [
     {
       public_id: {

@@ -17,7 +17,7 @@ import Pagination from '../../components/Pagination';
 /* ─── INITIAL DATA ──────────────────────────────────────────────────── */
 const initialProducts = [];
 
-const emptyForm = { name: '', category: '', price: '', salePrice: '', stock: '', description: '', status: 'Active', images: [] };
+const emptyForm = { name: '', category: '', price: '', salePrice: '', stock: '', description: '', status: 'Active', collection: '', images: [] };
 
 /* ─── MODAL STYLES ──────────────────────────────────────────────────── */
 const inputStyle = {
@@ -34,6 +34,7 @@ export default function AdminProducts() {
     const { refreshProducts } = useProducts();
     const [products, setProducts] = useState(initialProducts);
     const [categories, setCategories] = useState([]);
+    const [collections, setCollections] = useState([]);
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [activePage, setActivePage] = useState('products');
     const [search, setSearch] = useState('');
@@ -54,6 +55,7 @@ export default function AdminProducts() {
     useEffect(() => {
         fetchProducts();
         fetchCategories();
+        fetchCollections();
     }, []);
 
     const fetchProducts = async () => {
@@ -78,6 +80,17 @@ export default function AdminProducts() {
             }
         } catch (error) {
             console.error('Error fetching categories', error);
+        }
+    };
+
+    const fetchCollections = async () => {
+        try {
+            const { data } = await axios.get(`${API_URL}/api/collections`);
+            if (data.success) {
+                setCollections(data.collections);
+            }
+        } catch (error) {
+            console.error('Error fetching collections', error);
         }
     };
 
@@ -112,6 +125,8 @@ export default function AdminProducts() {
             
             const payload = { ...form, price: Number(form.price), stock: Number(form.stock) };
             if (form.salePrice) payload.salePrice = Number(form.salePrice);
+            if (form.collection) payload.collection = form.collection;
+            else payload.collection = null;
             
             const { data } = await axios.post(`${API_URL}/api/products`, payload, config);
             if (data.success) {
@@ -163,6 +178,7 @@ export default function AdminProducts() {
             stock: p.stock,
             description: p.description,
             status: p.status,
+            collection: p.collection?._id || p.collection || '',
             images: [], // new images to add (base64)
             existingImages: p.images || [], // already saved Cloudinary images
         });
@@ -184,6 +200,7 @@ export default function AdminProducts() {
                 stock: Number(form.stock),
                 description: form.description,
                 status: form.status,
+                collection: form.collection || null,
                 images: form.images, // new base64 images to upload
                 existingImages: form.existingImages, // keep these cloudinary images
             };
@@ -483,6 +500,13 @@ export default function AdminProducts() {
                                         </select>
                                     </div>
                                 </div>
+                                <div style={{ marginBottom: '16px' }}>
+                                    <label style={labelStyle}>Collection (Optional)</label>
+                                    <select name="collection" value={form.collection} onChange={handleFormChange} style={{ ...inputStyle, cursor: 'pointer' }}>
+                                        <option value="" style={{ background: '#1a1410' }}>No Collection</option>
+                                        {collections.filter(c => c.status === 'Active').map(c => <option key={c._id} value={c._id} style={{ background: '#1a1410' }}>{c.emoji} {c.name}</option>)}
+                                    </select>
+                                </div>
                                 {/* Image Upload */}
                                 <div style={{ marginBottom: '16px' }}>
                                     <label style={labelStyle}>Product Images <span style={{ color: '#c9a84c' }}>*</span></label>
@@ -606,6 +630,13 @@ export default function AdminProducts() {
                                     <textarea name="description" value={form.description} onChange={handleFormChange} rows={3}
                                         style={{ ...inputStyle, resize: 'vertical' }}
                                         onFocus={e => e.target.style.borderColor = '#c9a84c'} onBlur={e => e.target.style.borderColor = '#3d3020'} />
+                                </div>
+                                <div style={{ marginBottom: '14px' }}>
+                                    <label style={labelStyle}>Collection (Optional)</label>
+                                    <select name="collection" value={form.collection || ''} onChange={handleFormChange} style={{ ...inputStyle, cursor: 'pointer' }}>
+                                        <option value="" style={{ background: '#1a1410' }}>No Collection</option>
+                                        {collections.filter(c => c.status === 'Active').map(c => <option key={c._id} value={c._id} style={{ background: '#1a1410' }}>{c.emoji} {c.name}</option>)}
+                                    </select>
                                 </div>
                                 <div style={{ marginBottom: '20px' }}>
                                     <label style={labelStyle}>Status <span style={{ color: '#c9a84c' }}>*</span></label>
