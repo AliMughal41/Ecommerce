@@ -411,19 +411,19 @@ export default function ShopPage({ wishlist, setWishlist }) {
 
                 {/* Discount/Out-of-stock badge — RIGHT side */}
                 {p.stock <= 0 ? (
-                  <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(10,10,10,0.88)', backdropFilter: 'blur(6px)', border: '1px solid rgba(231,76,60,0.5)', borderRadius: '4px', padding: '5px 12px', zIndex: 2, animation: 'badge-pulse 2s ease-in-out infinite' }}>
+                  <div className="shop-soldout-badge" style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(10,10,10,0.88)', backdropFilter: 'blur(6px)', border: '1px solid rgba(231,76,60,0.5)', borderRadius: '4px', padding: '5px 12px', zIndex: 2, animation: 'badge-pulse 2s ease-in-out infinite' }}>
                     <span style={{ color: '#e74c3c', fontSize: '10px', fontWeight: 800, letterSpacing: '2px' }}>SOLD OUT</span>
                   </div>
                 ) : p.salePrice && p.price > p.salePrice ? (() => {
                   const discount = Math.round(((p.price - p.salePrice) / p.price) * 100);
                   return (
-                    <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 2, animation: 'badge-bounce 3s ease-in-out infinite' }}>
+                    <div className="shop-discount-badge" style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 2, animation: 'badge-bounce 3s ease-in-out infinite' }}>
                       <div style={{ background: 'rgba(10,10,10,0.9)', backdropFilter: 'blur(6px)', border: '1px solid rgba(201,168,76,0.5)', borderRadius: '6px', padding: '7px 12px', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 12px rgba(201,168,76,0.15)' }}>
-                        <span style={{ color: '#c9a84c', fontSize: '18px', fontWeight: 800, lineHeight: 1 }}>{discount}%</span>
-                        <div style={{ width: '1px', height: '18px', background: 'rgba(201,168,76,0.35)' }}></div>
+                        <span data-percent style={{ color: '#c9a84c', fontSize: '18px', fontWeight: 800, lineHeight: 1 }}>{discount}%</span>
+                        <div className="shop-badge-divider" style={{ width: '1px', height: '18px', background: 'rgba(201,168,76,0.35)' }}></div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-                          <span style={{ color: '#fff', fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', lineHeight: 1 }}>SAVE</span>
-                          <span style={{ color: '#8a7a6a', fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', lineHeight: 1 }}>OFF</span>
+                          <span className="shop-badge-text" style={{ color: '#fff', fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', lineHeight: 1 }}>SAVE</span>
+                          <span className="shop-badge-text" style={{ color: '#8a7a6a', fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', lineHeight: 1 }}>OFF</span>
                         </div>
                       </div>
                     </div>
@@ -437,6 +437,15 @@ export default function ShopPage({ wishlist, setWishlist }) {
                   @keyframes badge-pulse {
                     0%, 100% { opacity: 1; }
                     50% { opacity: 0.7; }
+                  }
+                  @media (max-width: 576px) {
+                    .shop-discount-badge { top: 6px !important; right: 6px !important; }
+                    .shop-discount-badge > div { padding: 4px 8px !important; gap: 5px !important; border-radius: 5px !important; }
+                    .shop-discount-badge [data-percent] { font-size: 13px !important; }
+                    .shop-discount-badge .shop-badge-divider { height: 12px !important; }
+                    .shop-discount-badge .shop-badge-text { font-size: 7px !important; letter-spacing: 1px !important; }
+                    .shop-soldout-badge { top: 6px !important; right: 6px !important; padding: 3px 8px !important; }
+                    .shop-soldout-badge span { font-size: 8px !important; letter-spacing: 1.5px !important; }
                   }
                 `}</style>
 
