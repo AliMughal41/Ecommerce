@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import HomePage from './pages/HomePage'
 import ShopPage from './pages/ShopPage'
@@ -60,13 +60,30 @@ import axios from 'axios'
 import './App.css'
 import API_URL from './config'
 
-function ScrollToTop() {
-  const { pathname, search } = useLocation();
+function ScrollRestoration() {
+  const location = useLocation();
+  const savedPositions = useRef({});
+
   useEffect(() => {
-    const params = new URLSearchParams(search);
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+  }, []);
+
+  useEffect(() => {
+    const key = location.key;
+    const save = () => { savedPositions.current[key] = window.scrollY; };
+    window.addEventListener('scroll', save, { passive: true });
+    return () => window.removeEventListener('scroll', save);
+  }, [location.key]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
     if (params.get('highlight')) return;
-    window.scrollTo(0, 0);
-  }, [pathname, search]);
+    const pos = savedPositions.current[location.key];
+    window.scrollTo(0, pos !== undefined ? pos : 0);
+  }, [location.key, location.pathname, location.search]);
+
   return null;
 }
 
@@ -142,7 +159,7 @@ function App() {
     <AlertProvider>
     <ProductsProvider>
     <BrowserRouter>
-      <ScrollToTop />
+      <ScrollRestoration />
       <PageViewTracker />
       <Routes>
         <Route path="/" element={<ShopPage wishlist={wishlist} setWishlist={setWishlist} />} />

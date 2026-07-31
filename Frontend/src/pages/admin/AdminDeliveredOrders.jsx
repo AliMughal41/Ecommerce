@@ -295,7 +295,23 @@ export default function AdminDeliveredOrders() {
                           <td style={{ padding: '10px 12px', color: GOLD, fontSize: '12px', fontWeight: 600 }}>{o.originalOrderNumber}</td>
                           <td style={{ padding: '10px 12px', color: '#fff', fontSize: '12px' }}>{o.customer?.fullName}</td>
                           <td style={{ padding: '10px 12px', color: '#ccc', fontSize: '12px' }}>{o.customer?.phone}</td>
-                          <td style={{ padding: '10px 12px', color: '#ccc', fontSize: '12px' }}>{o.items?.length}</td>
+                          <td style={{ padding: '10px 12px' }}>
+                            {o.items?.[0] ? (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                {o.items[0].image ? (
+                                  <img src={o.items[0].image} alt={o.items[0].name} style={{ width: '34px', height: '34px', borderRadius: '4px', objectFit: 'cover', flexShrink: 0, border: '1px solid #2a1f10' }} />
+                                ) : (
+                                  <div style={{ width: '34px', height: '34px', borderRadius: '4px', background: '#141010', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#555', flexShrink: 0 }}>NO IMG</div>
+                                )}
+                                <div>
+                                  <div style={{ color: '#fff', fontSize: '12px', maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.items[0].name}</div>
+                                  <div style={{ color: '#8a7a6a', fontSize: '10px' }}>{o.items.length === 1 ? '1 item' : `${o.items.length} items`}</div>
+                                </div>
+                              </div>
+                            ) : (
+                              <span style={{ color: '#8a7a6a', fontSize: '12px' }}>0</span>
+                            )}
+                          </td>
                           <td style={{ padding: '10px 12px', color: GOLD, fontSize: '13px', fontWeight: 700 }}>Rs. {(o.total || 0).toLocaleString()}</td>
                           <td style={{ padding: '10px 12px', color: '#ccc', fontSize: '11px', textTransform: 'capitalize' }}>{o.customer?.paymentMethod === 'cod' ? 'COD' : 'WhatsApp'}</td>
                           <td style={{ padding: '10px 12px', color: '#8a7a6a', fontSize: '12px' }}>{o.customer?.city}</td>
@@ -353,10 +369,17 @@ export default function AdminDeliveredOrders() {
             <div style={{ borderTop: '1px solid #2a1f10', paddingTop: '16px', marginBottom: '16px' }}>
               <div style={{ color: '#8a7a6a', fontSize: '10px', letterSpacing: '1px', marginBottom: '8px' }}>ITEMS</div>
               {selectedOrder.items?.map((item, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #1a1410' }}>
-                  <div>
-                    <span style={{ color: '#fff', fontSize: '12px' }}>{item.name}</span>
-                    <span style={{ color: '#8a7a6a', fontSize: '11px', marginLeft: '8px' }}>x{item.quantity}</span>
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #1a1410' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    {item.image ? (
+                      <img src={item.image} alt={item.name} style={{ width: '40px', height: '40px', borderRadius: '4px', objectFit: 'cover', flexShrink: 0, border: '1px solid #2a1f10' }} />
+                    ) : (
+                      <div style={{ width: '40px', height: '40px', borderRadius: '4px', background: '#141010', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#555', flexShrink: 0 }}>NO IMG</div>
+                    )}
+                    <div>
+                      <span style={{ color: '#fff', fontSize: '12px' }}>{item.name}</span>
+                      <span style={{ color: '#8a7a6a', fontSize: '11px', marginLeft: '8px' }}>x{item.quantity}</span>
+                    </div>
                   </div>
                   <span style={{ color: GOLD, fontSize: '12px', fontWeight: 600 }}>Rs. {(item.price * item.quantity).toLocaleString()}</span>
                 </div>

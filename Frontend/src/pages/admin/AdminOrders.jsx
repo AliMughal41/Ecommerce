@@ -614,7 +614,7 @@ export default function AdminOrders() {
                         color: '#8a7a6a',
                         letterSpacing: '1px',
                         textTransform: 'uppercase',
-                        minWidth: '100px'
+                        minWidth: '190px'
                       }}>
                         Order Details
                       </th>
@@ -722,8 +722,24 @@ export default function AdminOrders() {
                             <div style={{ fontSize: '10px', color: '#8a7a6a' }}>{order.customer?.email}</div>
                             <div style={{ fontSize: '10px', color: '#8a7a6a' }}>{order.customer?.address1}, {order.customer?.city}</div>
                           </td>
-                          <td style={{ padding: '10px 6px', fontSize: '12px' }}>
-                            +{order.items?.length || 0}
+                          <td style={{ padding: '10px 6px' }}>
+                            {order.items?.[0] ? (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                {order.items[0].image ? (
+                                  <img src={order.items[0].image} alt={order.items[0].name} style={{ width: '34px', height: '34px', borderRadius: '4px', objectFit: 'cover', flexShrink: 0, border: '1px solid #3d3020' }} />
+                                ) : (
+                                  <div style={{ width: '34px', height: '34px', borderRadius: '4px', background: '#1a1410', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#555', flexShrink: 0 }}>NO IMG</div>
+                                )}
+                                <div>
+                                  <div style={{ fontSize: '12px', color: '#fff', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{order.items[0].name}</div>
+                                  <div style={{ fontSize: '10px', color: '#8a7a6a' }}>
+                                    {order.items.length === 1 ? '1 item' : `${order.items.length} items`}
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <span style={{ color: '#8a7a6a', fontSize: '12px' }}>+0</span>
+                            )}
                           </td>
                           <td style={{ 
                             padding: '10px 6px', 
@@ -936,9 +952,16 @@ export default function AdminOrders() {
               <div className="mt-2">
                 {selectedOrder.items?.map((item, idx) => (
                   <div key={idx} className="d-flex justify-content-between align-items-center py-2" style={{ borderBottom: '1px solid #2a1f10' }}>
-                    <div>
-                      <div className="fw-semibold text-white">{item.name}</div>
-                      <div style={{ color: '#8a7a6a', fontSize: '12px' }}>Qty: {item.quantity} • {item.category}</div>
+                    <div className="d-flex align-items-center gap-3">
+                      {item.image ? (
+                        <img src={item.image} alt={item.name} style={{ width: '44px', height: '44px', borderRadius: '4px', objectFit: 'cover', border: '1px solid #3d3020', flexShrink: 0 }} />
+                      ) : (
+                        <div style={{ width: '44px', height: '44px', borderRadius: '4px', background: '#141010', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#555', flexShrink: 0 }}>NO IMG</div>
+                      )}
+                      <div>
+                        <div className="fw-semibold text-white">{item.name}</div>
+                        <div style={{ color: '#8a7a6a', fontSize: '12px' }}>Qty: {item.quantity} • {item.category}</div>
+                      </div>
                     </div>
                     <div style={{ color: '#c9a84c', fontWeight: 600 }}>Rs. {(item.price * item.quantity).toLocaleString()}</div>
                   </div>

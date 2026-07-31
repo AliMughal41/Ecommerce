@@ -8,6 +8,7 @@ import Footer from '../components/Footer';
 import Pagination from '../components/Pagination';
 import { useAlert } from '../context/AlertContext';
 import { useProducts } from '../context/ProductsContext';
+import usePersistentState from '../utils/usePersistentState';
 import API_URL from '../config';
 import { trackAddToCart } from '../utils/tracking';
 
@@ -17,11 +18,11 @@ export default function ShopPage({ wishlist, setWishlist }) {
   const { products, loading } = useProducts();
   const [categories, setCategories] = useState([]);
   const [superCategories, setSuperCategories] = useState([]);
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [sortBy, setSortBy] = useState('Newest First');
+  const [activeCategory, setActiveCategory] = usePersistentState('shop_category', 'All');
+  const [sortBy, setSortBy] = usePersistentState('shop_sort', 'Newest First');
   const { showAlert } = useAlert();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [currentPage, setCurrentPage] = usePersistentState('shop_page', 1);
+  const [itemsPerPage, setItemsPerPage] = usePersistentState('shop_items_per_page', 12);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const highlightId = searchParams.get('highlight') || '';
@@ -53,9 +54,12 @@ export default function ShopPage({ wishlist, setWishlist }) {
     fetchData();
   }, []);
 
+  const firstRender = useRef(true);
+
   useEffect(() => {
+    if (firstRender.current) { firstRender.current = false; return; }
     setCurrentPage(1);
-  }, [activeCategory, sortBy, superCategoryFilter]);
+  }, [activeCategory, sortBy, superCategoryFilter, setCurrentPage]);
 
   useEffect(() => {
     if (loading || !highlightId || products.length === 0) return;
@@ -175,6 +179,10 @@ export default function ShopPage({ wishlist, setWishlist }) {
 
   const totalPages = Math.ceil(sorted.length / itemsPerPage);
   const paginatedProducts = sorted.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) setCurrentPage(totalPages);
+  }, [totalPages, currentPage, setCurrentPage]);
 
   return (
 <div className="text-white" style={{ fontFamily: "'Segoe UI', system-ui, sans-serif", background: '#0a0a0a', minHeight: '100vh', paddingTop: '96px' }}>

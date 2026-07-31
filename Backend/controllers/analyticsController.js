@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Order = require('../models/Order');
 const DeliveredOrder = require('../models/DeliveredOrder');
 const Product = require('../models/Product');
@@ -489,6 +490,8 @@ const lookupGeo = async (ip) => {
 };
 
 exports.trackEvent = async (req, res) => {
+  const logErr = (where, err) => console.error(`Analytics track (${where}) error:`, err?.message || err);
+
   try {
     const {
       eventType, productId, path, query: searchQuery, sessionId,
@@ -499,6 +502,11 @@ exports.trackEvent = async (req, res) => {
 
     if (!eventType) return res.status(200).json({ success: true });
 
+    let validProductId;
+    if (productId) {
+      try { validProductId = new mongoose.Types.ObjectId(String(productId)); } catch { validProductId = undefined; }
+    }
+
     const lookedUp = await lookupGeo(ip);
     const geo = {
       city: city || lookedUp.city,
@@ -506,53 +514,62 @@ exports.trackEvent = async (req, res) => {
     };
 
     if (sessionId) {
-      const now = new Date();
-      const setOnInsert = {
-        sessionId,
-        startTime: now,
+      try {
+        const now = new Date();
+        const setOnInsert = {
+          sessionId,
+          startTime: now,
+          deviceType: deviceType || '',
+          browser: browser || '',
+          os: os || '',
+          referrer: referrer || '',
+          source: source || '',
+          ip,
+          city: geo.city,
+          country: geo.country,
+          customerId,
+        };
+        const inc = eventType === 'page_view' ? { pageViews: 1 } : {};
+        const push = eventType === 'page_view' && path ? { $push: { pages: { $each: [path], $slice: -10 } } } : {};
+        const geoSet = {};
+        if (geo.city) geoSet.city = geo.city;
+        if (geo.country) geoSet.country = geo.country;
+        await VisitorSession.updateOne(
+          { sessionId },
+          { $setOnInsert: setOnInsert, $set: { lastActive: now, ...geoSet }, ...inc, ...push },
+          { upsert: true }
+        );
+      } catch (err) {
+        logErr('session', err);
+      }
+    }
+
+    try {
+      await AnalyticsEvent.create({
+        eventType,
+        productId: validProductId,
+        customerId,
+        sessionId: sessionId || '',
+        path: path || '',
+        query: searchQuery || '',
+        userAgent: req.headers['user-agent'] || '',
+        ip,
         deviceType: deviceType || '',
         browser: browser || '',
         os: os || '',
         referrer: referrer || '',
         source: source || '',
-        ip,
         city: geo.city,
         country: geo.country,
-        customerId,
-      };
-      const inc = eventType === 'page_view' ? { pageViews: 1 } : {};
-      const push = eventType === 'page_view' && path ? { $push: { pages: { $each: [path], $slice: -10 } } } : {};
-      const geoSet = {};
-      if (geo.city) geoSet.city = geo.city;
-      if (geo.country) geoSet.country = geo.country;
-      await VisitorSession.updateOne(
-        { sessionId },
-        { $setOnInsert: setOnInsert, $set: { lastActive: now, ...geoSet }, ...inc, ...push },
-        { upsert: true }
-      );
+        screen: screen || '',
+        metadata: metadata || {},
+      });
+    } catch (err) {
+      logErr('event', err);
     }
-
-    await AnalyticsEvent.create({
-      eventType,
-      productId: productId || undefined,
-      customerId,
-      sessionId: sessionId || '',
-      path: path || '',
-      query: searchQuery || '',
-      userAgent: req.headers['user-agent'] || '',
-      ip,
-      deviceType: deviceType || '',
-      browser: browser || '',
-      os: os || '',
-      referrer: referrer || '',
-      source: source || '',
-      city: geo.city,
-      country: geo.country,
-      screen: screen || '',
-      metadata: metadata || {},
-    });
     res.status(200).json({ success: true });
   } catch (error) {
+    logErr('trackEvent', error);
     res.status(200).json({ success: true });
   }
 };

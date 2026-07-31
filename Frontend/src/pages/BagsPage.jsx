@@ -8,6 +8,7 @@ import Footer from '../components/Footer';
 import Pagination from '../components/Pagination';
 import { useAlert } from '../context/AlertContext';
 import { useProducts } from '../context/ProductsContext';
+import usePersistentState from '../utils/usePersistentState';
 import API_URL from '../config';
 import { trackAddToCart } from '../utils/tracking';
 
@@ -17,11 +18,11 @@ export default function BagsPage({ wishlist, setWishlist }) {
   const { products: allProducts, loading } = useProducts();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [sortBy, setSortBy] = useState('Newest First');
+  const [activeCategory, setActiveCategory] = usePersistentState('bags_category', 'All');
+  const [sortBy, setSortBy] = usePersistentState('bags_sort', 'Newest First');
   const { showAlert } = useAlert();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [currentPage, setCurrentPage] = usePersistentState('bags_page', 1);
+  const [itemsPerPage, setItemsPerPage] = usePersistentState('bags_items_per_page', 12);
   const navigate = useNavigate();
   const [catDropdownOpen, setCatDropdownOpen] = useState(false);
   const catDropdownRef = useRef(null);
@@ -58,7 +59,11 @@ export default function BagsPage({ wishlist, setWishlist }) {
     fetchData();
   }, [allProducts]);
 
-  useEffect(() => { setCurrentPage(1); }, [activeCategory, sortBy]);
+  const firstRender = useRef(true);
+  useEffect(() => {
+    if (firstRender.current) { firstRender.current = false; return; }
+    setCurrentPage(1);
+  }, [activeCategory, sortBy, setCurrentPage]);
 
   const getProductId = (product) => product._id || product.id || '';
 
@@ -124,6 +129,10 @@ export default function BagsPage({ wishlist, setWishlist }) {
 
   const totalPages = Math.ceil(sorted.length / itemsPerPage);
   const paginatedProducts = sorted.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) setCurrentPage(totalPages);
+  }, [totalPages, currentPage, setCurrentPage]);
 
   return (
     <div className="text-white" style={{ fontFamily: "'Segoe UI', system-ui, sans-serif", background: '#0a0a0a', minHeight: '100vh', paddingTop: '96px' }}>

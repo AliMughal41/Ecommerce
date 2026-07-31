@@ -1,6 +1,7 @@
 const AnalyticsEvent = require('../models/Analytics');
 const VisitorSession = require('../models/VisitorSession');
 const Product = require('../models/Product');
+const mongoose = require('mongoose');
 
 const startOfDay = (d = new Date()) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
 const daysAgo = (n) => { const x = new Date(); x.setDate(x.getDate() - n); x.setHours(0, 0, 0, 0); return x; };
@@ -277,11 +278,14 @@ exports.getProductFunnel = async (req, res) => {
 
     const nameLookup = {};
     if (productIds.length) {
-      const names = await AnalyticsEvent.aggregate([
-        { $match: { productId: { $in: productIds }, 'metadata.productName': { $ne: '' } } },
-        { $group: { _id: '$productId', name: { $first: '$metadata.productName' } } },
-      ]);
-      names.forEach(n => { nameLookup[n._id?.toString()] = n.name; });
+      const validIds = productIds.filter(id => mongoose.isValidObjectId(id)).map(id => new mongoose.Types.ObjectId(id));
+      if (validIds.length) {
+        const names = await AnalyticsEvent.aggregate([
+          { $match: { productId: { $in: validIds }, 'metadata.productName': { $ne: '' } } },
+          { $group: { _id: '$productId', name: { $first: '$metadata.productName' } } },
+        ]);
+        names.forEach(n => { nameLookup[n._id?.toString()] = n.name; });
+      }
     }
 
     const productMap = {};
