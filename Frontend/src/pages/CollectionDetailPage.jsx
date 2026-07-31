@@ -215,7 +215,7 @@ export default function CollectionDetailPage() {
 
                                         {/* Wishlist heart — LEFT side */}
                                         <button
-                                            className="position-absolute d-flex align-items-center justify-content-center border-0 p-0"
+                                            className="shop-wishlist-btn position-absolute d-flex align-items-center justify-content-center border-0 p-0"
                                             style={{ zIndex: 3, top: '10px', left: '10px', background: 'rgba(10,10,10,0.6)', backdropFilter: 'blur(4px)', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)' }}
                                             onClick={(e) => { e.stopPropagation(); toggleWishlist(p); }}>
                                             <Heart
@@ -256,6 +256,8 @@ export default function CollectionDetailPage() {
                                                 .shop-discount-badge .shop-badge-text { font-size: 7px !important; letter-spacing: 1px !important; }
                                                 .shop-soldout-badge { top: 6px !important; right: 6px !important; padding: 3px 8px !important; }
                                                 .shop-soldout-badge span { font-size: 8px !important; letter-spacing: 1.5px !important; }
+                                                .shop-wishlist-btn { top: 6px !important; left: 6px !important; width: 28px !important; height: 28px !important; border-radius: 50% !important; overflow: hidden; backdrop-filter: none !important; }
+                                                .shop-wishlist-btn svg { width: 13px !important; height: 13px !important; }
                                             }
                                         `}</style>
 
