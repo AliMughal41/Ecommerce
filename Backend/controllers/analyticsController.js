@@ -526,8 +526,6 @@ exports.trackEvent = async (req, res) => {
           referrer: referrer || '',
           source: source || '',
           ip,
-          city: geo.city,
-          country: geo.country,
           customerId,
         };
         const inc = eventType === 'page_view' ? { pageViews: 1 } : {};
