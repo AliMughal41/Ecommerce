@@ -491,6 +491,7 @@ const lookupGeo = async (ip) => {
 
 exports.trackEvent = async (req, res) => {
   const logErr = (where, err) => console.error(`Analytics track (${where}) error:`, err?.message || err);
+  const debug = req.headers['x-analytics-debug'] === '1' ? {} : null;
 
   try {
     const {
@@ -539,8 +540,10 @@ exports.trackEvent = async (req, res) => {
           { $setOnInsert: setOnInsert, $set: { lastActive: now, ...geoSet }, ...inc, ...push },
           { upsert: true }
         );
+        if (debug) debug.session = 'ok';
       } catch (err) {
         logErr('session', err);
+        if (debug) debug.sessionError = err?.message;
       }
     }
 
@@ -564,13 +567,16 @@ exports.trackEvent = async (req, res) => {
         screen: screen || '',
         metadata: metadata || {},
       });
+      if (debug) debug.event = 'ok';
     } catch (err) {
       logErr('event', err);
+      if (debug) debug.eventError = err?.message;
     }
-    res.status(200).json({ success: true });
+    res.status(200).json({ success: true, ...(debug || {}) });
   } catch (error) {
     logErr('trackEvent', error);
-    res.status(200).json({ success: true });
+    if (debug) debug.topError = error?.message;
+    res.status(200).json({ success: true, ...(debug || {}) });
   }
 };
 
