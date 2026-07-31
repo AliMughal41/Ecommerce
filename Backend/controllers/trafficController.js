@@ -1,5 +1,6 @@
 const AnalyticsEvent = require('../models/Analytics');
 const VisitorSession = require('../models/VisitorSession');
+const Product = require('../models/Product');
 
 const startOfDay = (d = new Date()) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
 const daysAgo = (n) => { const x = new Date(); x.setDate(x.getDate() - n); x.setHours(0, 0, 0, 0); return x; };
@@ -283,13 +284,20 @@ exports.getProductFunnel = async (req, res) => {
       names.forEach(n => { nameLookup[n._id?.toString()] = n.name; });
     }
 
+    const productMap = {};
+    if (productIds.length) {
+      const products = await Product.find({ _id: { $in: productIds } }).select('name mainImage').lean();
+      products.forEach(p => { productMap[p._id.toString()] = p; });
+    }
+
     const rows = productIds.map(id => {
       const viewsCount = viewMap[id] || 0;
       const cartsCount = cartMap[id] || 0;
       const purchaseCount = purchaseMap[id] || 0;
       return {
         productId: id,
-        name: nameLookup[id] || `Product ${id.slice(0, 6)}`,
+        name: productMap[id]?.name || nameLookup[id] || `Product ${id.slice(0, 6)}`,
+        image: productMap[id]?.mainImage || '',
         views: viewsCount,
         cartAdds: cartsCount,
         purchases: purchaseCount,
@@ -332,6 +340,21 @@ exports.getAbandonedCarts = async (req, res) => {
         items: (s.items || []).slice(-5).filter(i => i.productId),
       }))
       .sort((a, b) => new Date(b.lastAdd) - new Date(a.lastAdd));
+
+    const allProductIds = [...new Set(abandoned.flatMap(s => (s.items || []).map(i => i.productId)).filter(Boolean))];
+    const productMap = {};
+    if (allProductIds.length) {
+      const products = await Product.find({ _id: { $in: allProductIds } }).select('name mainImage').lean();
+      products.forEach(p => { productMap[p._id.toString()] = p; });
+    }
+    abandoned.forEach(s => {
+      s.items = (s.items || []).map(i => ({
+        productId: i.productId,
+        name: productMap[i.productId]?.name || i.name || `Product ${String(i.productId).slice(0, 6)}`,
+        image: productMap[i.productId]?.mainImage || '',
+        addedAt: i.addedAt,
+      }));
+    });
 
     const abandonedSessions = abandoned.length;
     const totalSessions = cartSessions.length;

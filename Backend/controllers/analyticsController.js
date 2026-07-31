@@ -451,8 +451,22 @@ const getClientIp = (req) => {
 // ── Server-side geolocation (cached by IP, no CORS issues) ─────────────────
 const geoCacheMap = new Map();
 
+const isPrivateIp = (ip) => {
+  if (!ip) return true;
+  const p = ip.replace(/^::ffff:/, '').toLowerCase();
+  if (p === '::1' || p.startsWith('fc') || p.startsWith('fd') || p.startsWith('fe8') || p.startsWith('fe9') || p.startsWith('fea') || p.startsWith('feb')) return true;
+  const parts = p.split('.');
+  if (parts.length !== 4) return false;
+  return parts[0] === '10'
+    || parts[0] === '127'
+    || (parts[0] === '172' && Number(parts[1]) >= 16 && Number(parts[1]) <= 31)
+    || (parts[0] === '192' && parts[1] === '168')
+    || (parts[0] === '169' && parts[1] === '254')
+    || (parts[0] === '100' && Number(parts[1]) >= 64 && Number(parts[1]) <= 127);
+};
+
 const lookupGeo = async (ip) => {
-  if (!ip || ip === '::1' || ip === '127.0.0.1' || ip.startsWith('::ffff:127')) return { city: '', country: '' };
+  if (!ip || isPrivateIp(ip)) return { city: '', country: '' };
   const cached = geoCacheMap.get(ip);
   if (cached) return cached;
   try {
@@ -463,8 +477,8 @@ const lookupGeo = async (ip) => {
     if (res.ok) {
       const data = await res.json();
       const geo = {
-        city: data.city || '',
-        country: data.country || data.country_name || '',
+        city: data.success === false ? '' : (data.city || ''),
+        country: data.success === false ? '' : (data.country_name || data.country || ''),
       };
       geoCacheMap.set(ip, geo);
       if (geoCacheMap.size > 5000) geoCacheMap.clear();
@@ -485,14 +499,14 @@ exports.trackEvent = async (req, res) => {
 
     if (!eventType) return res.status(200).json({ success: true });
 
+    const lookedUp = await lookupGeo(ip);
+    const geo = {
+      city: city || lookedUp.city,
+      country: country || lookedUp.country,
+    };
+
     if (sessionId) {
       const now = new Date();
-      const existing = await VisitorSession.findOne({ sessionId }).select('startTime').lean();
-      let geo = { city: city || '', country: country || '' };
-      if (!existing) {
-        const lookedUp = await lookupGeo(ip);
-        geo = { city: geo.city || lookedUp.city, country: geo.country || lookedUp.country };
-      }
       const setOnInsert = {
         sessionId,
         startTime: now,
@@ -508,9 +522,12 @@ exports.trackEvent = async (req, res) => {
       };
       const inc = eventType === 'page_view' ? { pageViews: 1 } : {};
       const push = eventType === 'page_view' && path ? { $push: { pages: { $each: [path], $slice: -10 } } } : {};
+      const geoSet = {};
+      if (geo.city) geoSet.city = geo.city;
+      if (geo.country) geoSet.country = geo.country;
       await VisitorSession.updateOne(
         { sessionId },
-        { $setOnInsert: setOnInsert, $set: { lastActive: now, ...(geo.city || geo.country ? { city: geo.city, country: geo.country } : {}) }, ...inc, ...push },
+        { $setOnInsert: setOnInsert, $set: { lastActive: now, ...geoSet }, ...inc, ...push },
         { upsert: true }
       );
     }
@@ -529,8 +546,8 @@ exports.trackEvent = async (req, res) => {
       os: os || '',
       referrer: referrer || '',
       source: source || '',
-      city: city || '',
-      country: country || '',
+      city: geo.city,
+      country: geo.country,
       screen: screen || '',
       metadata: metadata || {},
     });
@@ -552,9 +569,13 @@ exports.trackSessionHeartbeat = async (req, res) => {
     const now = new Date();
     const existing = await VisitorSession.findOne({ sessionId }).lean();
     if (existing) {
-      await VisitorSession.updateOne({ sessionId }, {
-        $set: { lastActive: now },
-      });
+      const update = { $set: { lastActive: now } };
+      if (!existing.city || !existing.country) {
+        const lookedUp = await lookupGeo(ip);
+        if (lookedUp.city && !existing.city) update.$set.city = lookedUp.city;
+        if (lookedUp.country && !existing.country) update.$set.country = lookedUp.country;
+      }
+      await VisitorSession.updateOne({ sessionId }, update);
     } else {
       const geo = await lookupGeo(ip);
       await VisitorSession.create({

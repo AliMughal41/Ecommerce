@@ -5,6 +5,14 @@ const SESSION_TTL = 30 * 60 * 1000;
 
 let geoCache = null;
 
+function isAdmin() {
+  try {
+    return typeof localStorage !== 'undefined' && !!localStorage.getItem('adminToken');
+  } catch {
+    return false;
+  }
+}
+
 export function getSessionId() {
   try {
     const now = Date.now();
@@ -28,22 +36,49 @@ function refreshSessionTs() {
 
 export function getDeviceInfo() {
   const ua = typeof navigator !== 'undefined' ? navigator.userAgent || '' : '';
+  const uad = typeof navigator !== 'undefined' && navigator.userAgentData ? navigator.userAgentData : null;
+  const touch = typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0;
+
   let deviceType = 'Desktop';
-  if (/Mobi|Android|iPhone|iPod/i.test(ua)) {
-    deviceType = /iPad|Tablet|Android(?!.*Mobile)/i.test(ua) ? 'Tablet' : 'Mobile';
+  if (uad && uad.mobile) {
+    deviceType = 'Mobile';
+  } else if (/iPad|Tablet/i.test(ua)) {
+    deviceType = 'Tablet';
+  } else if (/Mobi|Android|iPhone|iPod/i.test(ua)) {
+    deviceType = /Android(?!.*Mobile)|Tablet/i.test(ua) ? 'Tablet' : 'Mobile';
+  } else if (touch && /Android|iPad|PlayBook|Silk/i.test(ua)) {
+    deviceType = 'Tablet';
   }
+
   let browser = 'Unknown';
-  if (/Edg\//i.test(ua)) browser = 'Edge';
-  else if (/OPR\/|Opera/i.test(ua)) browser = 'Opera';
-  else if (/Chrome\//i.test(ua)) browser = 'Chrome';
+  if (/Edg(e|A|iOS)?\//i.test(ua)) browser = 'Edge';
+  else if (/OPR\/|Opera|OPT\//i.test(ua)) browser = 'Opera';
+  else if (/SamsungBrowser/i.test(ua)) browser = 'Samsung Internet';
+  else if (/UCBrowser/i.test(ua)) browser = 'UC Browser';
+  else if (/MiuiBrowser|XiaoMi|Miui/i.test(ua)) browser = 'MIUI Browser';
+  else if (/CriOS\//i.test(ua)) browser = 'Chrome';
+  else if (/Chrome\/|Chromium\//i.test(ua)) browser = 'Chrome';
+  else if (/FxiOS\//i.test(ua)) browser = 'Firefox';
   else if (/Firefox\//i.test(ua)) browser = 'Firefox';
   else if (/Safari\//i.test(ua)) browser = 'Safari';
+
   let os = 'Unknown';
-  if (/Windows/i.test(ua)) os = 'Windows';
-  else if (/Mac OS X|Macintosh/i.test(ua)) os = 'macOS';
+  if (/Windows NT|Windows Phone/i.test(ua)) os = 'Windows';
   else if (/Android/i.test(ua)) os = 'Android';
   else if (/iPhone|iPad|iPod/i.test(ua)) os = 'iOS';
-  else if (/Linux/i.test(ua)) os = 'Linux';
+  else if (/Mac OS X|Macintosh/i.test(ua)) os = 'macOS';
+  else if (/CrOS|Chrome OS/i.test(ua)) os = 'Chrome OS';
+  else if (/Linux|X11/i.test(ua)) os = 'Linux';
+
+  if (uad && uad.platform) {
+    const p = uad.platform;
+    if (/Win/i.test(p)) os = 'Windows';
+    else if (/Android/i.test(p)) os = 'Android';
+    else if (/iPhone|iPad|iPod/i.test(p) || /iOS/i.test(p)) os = 'iOS';
+    else if (/Mac/i.test(p)) os = 'macOS';
+    else if (/Linux/i.test(p)) os = 'Linux';
+  }
+
   return { deviceType, browser, os };
 }
 
@@ -51,11 +86,15 @@ export function getTrafficSource() {
   try {
     const ref = typeof document !== 'undefined' ? document.referrer || '' : '';
     if (!ref) return { referrer: '', source: 'Direct' };
-    if (ref.includes(window.location.origin)) return { referrer: ref, source: 'Internal' };
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    if (origin && ref.includes(origin)) return { referrer: ref, source: 'Internal' };
+    let host = '';
+    try { host = new URL(ref).hostname.toLowerCase().replace(/^www\./, ''); } catch { host = ref.toLowerCase(); }
+    const isDomain = (name) => host === name || host.endsWith(`.${name}`) || host.startsWith(`${name}.`) || host.includes(`.${name}.`);
     let source = 'Other';
-    if (/google\./i.test(ref)) source = 'Google';
-    else if (/bing\.|yahoo\.|duckduckgo\./i.test(ref)) source = 'Search Engine';
-    else if (/facebook|instagram|tiktok|youtube|twitter|x\.com|whatsapp|pinterest|snapchat|linkedin/i.test(ref)) source = 'Social Media';
+    if (isDomain('google') || isDomain('goo.gl')) source = 'Google';
+    else if (['bing', 'yahoo', 'duckduckgo', 'baidu', 'yandex', 'ecosia', 'ask', 'seznam', 'naver', 'qwant', 'brave.search'].some(isDomain)) source = 'Search Engine';
+    else if (['facebook', 'fb', 'instagram', 'tiktok', 'youtube', 'twitter', 'x', 'whatsapp', 'pinterest', 'snapchat', 'linkedin', 'telegram', 't.me', 'messenger', 'reddit', 'vk', 'tumblr', 't.co'].some(isDomain)) source = 'Social Media';
     return { referrer: ref, source };
   } catch {
     return { referrer: '', source: 'Direct' };
@@ -86,6 +125,7 @@ function buildBase() {
 
 export function track(eventType, payload = {}) {
   try {
+    if (isAdmin()) return;
     const body = { eventType, ...buildBase(), ...payload };
     fetch(`${API_URL}/api/analytics/track`, {
       method: 'POST',
@@ -99,6 +139,7 @@ export function track(eventType, payload = {}) {
 
 export function heartbeat() {
   try {
+    if (isAdmin()) return;
     const body = buildBase();
     if (!body.sessionId) return;
     navigator.sendBeacon(`${API_URL}/api/analytics/session/heartbeat`, new Blob([JSON.stringify(body)], { type: 'application/json' }));
@@ -108,6 +149,7 @@ export function heartbeat() {
 let heartbeatInterval = null;
 
 export function startSessionTracking() {
+  if (isAdmin()) return;
   if (heartbeatInterval) return;
   heartbeatInterval = setInterval(heartbeat, 20000);
   window.addEventListener('pagehide', heartbeat);

@@ -56,6 +56,7 @@ export default function AdminAnalytics() {
   const [loading, setLoading] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [data, setData] = useState({});
+  const [previewImage, setPreviewImage] = useState(null);
 
   const token = localStorage.getItem('adminToken');
   const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -347,7 +348,18 @@ export default function AdminAnalytics() {
             <tbody>
               {products.map((p, i) => (
                 <tr key={i} style={{ borderBottom: '1px solid #1a1410' }}>
-                  <td style={{ padding: '10px 8px', color: '#fff', maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</td>
+                  <td style={{ padding: '10px 8px', maxWidth: '220px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {p.image ? (
+                        <img src={p.image} alt={p.name} onClick={() => setPreviewImage(p.image)} title="Click to enlarge"
+                          style={{ width: '34px', height: '34px', borderRadius: '4px', objectFit: 'cover', flexShrink: 0, border: '1px solid #3d3020', cursor: 'zoom-in' }} />
+                      ) : (
+                        <div style={{ width: '34px', height: '34px', borderRadius: '4px', background: '#1a1410', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#555', flexShrink: 0 }}>NO IMG</div>
+                      )}
+                      <span onClick={() => p.image && setPreviewImage(p.image)} title={p.name}
+                        style={{ color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: p.image ? 'zoom-in' : 'default' }}>{p.name}</span>
+                    </div>
+                  </td>
                   <td style={{ padding: '10px 8px', textAlign: 'center', color: '#fff' }}>{p.views.toLocaleString()}</td>
                   <td style={{ padding: '10px 8px', textAlign: 'center', color: '#f39c12' }}>{p.cartAdds.toLocaleString()}</td>
                   <td style={{ padding: '10px 8px', textAlign: 'center', color: '#27ae60' }}>{p.purchases.toLocaleString()}</td>
@@ -407,7 +419,11 @@ export default function AdminAnalytics() {
                       <td style={{ padding: '8px', color: '#555', fontSize: '11px' }}>{a.sessionId}</td>
                       <td style={{ padding: '8px', color: '#fff' }}>
                         {(a.items || []).map((it, j) => (
-                          <span key={j} style={{ display: 'inline-block', background: '#1a1410', border: '1px solid #3d3020', borderRadius: '3px', padding: '2px 8px', marginRight: '4px', marginBottom: '2px', fontSize: '10px', color: '#c9a84c' }}>
+                          <span key={j} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#1a1410', border: '1px solid #3d3020', borderRadius: '3px', padding: '2px 8px 2px 2px', marginRight: '4px', marginBottom: '2px', fontSize: '10px', color: '#c9a84c' }}>
+                            {it.image ? (
+                              <img src={it.image} alt={it.name} onClick={() => setPreviewImage(it.image)} title="Click to enlarge"
+                                style={{ width: '20px', height: '20px', borderRadius: '2px', objectFit: 'cover', cursor: 'zoom-in' }} />
+                            ) : null}
                             {it.name || it.productId}
                           </span>
                         ))}
@@ -854,6 +870,15 @@ export default function AdminAnalytics() {
           </div>
         </div>
       </div>
+
+      {previewImage && (
+        <div onClick={() => setPreviewImage(null)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.88)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out' }}>
+          <div style={{ position: 'relative', maxWidth: '92vw', maxHeight: '92vh', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <img src={previewImage} alt="Product preview" style={{ maxWidth: '92vw', maxHeight: '88vh', borderRadius: '6px', border: '1px solid #3d3020', objectFit: 'contain' }} />
+            <span style={{ marginTop: '10px', color: '#8a7a6a', fontSize: '11px' }}>Click anywhere to close</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
