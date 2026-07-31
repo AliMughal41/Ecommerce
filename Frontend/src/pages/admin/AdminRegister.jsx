@@ -65,7 +65,7 @@ export default function AdminRegister() {
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <div style={{
-            width: '52px', height: '52px', borderRadius: '50%', border: '2px solid #c9a84c',
+            width: '52px', height: '52px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 14px', background: 'rgba(201,168,76,0.08)'
           }}>

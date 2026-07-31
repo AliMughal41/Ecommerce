@@ -6,6 +6,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useAlert } from '../context/AlertContext';
 import API_URL from '../config';
+import { trackProductView, trackAddToCart } from '../utils/tracking';
 
 export default function ProductDetailPage({ wishlist, setWishlist }) {
     const { id } = useParams();
@@ -22,6 +23,7 @@ export default function ProductDetailPage({ wishlist, setWishlist }) {
                 const { data } = await axios.get(`${API_URL}/api/products/${id}`);
                 if (data.success) {
                     setProduct(data.product);
+                    trackProductView(data.product._id || data.product.id, data.product.name);
                 }
             } catch (error) {
                 console.error('Error fetching product', error);
@@ -83,6 +85,7 @@ export default function ProductDetailPage({ wishlist, setWishlist }) {
         localStorage.setItem('thriftora_cart', JSON.stringify(updatedCart));
         window.dispatchEvent(new Event('cart-updated'));
         showAlert({ type: 'success', message: `${product.name} added to Cart!` });
+        trackAddToCart(getProductId(product), product.name, quantity);
     };
 
     const buyNow = () => {
@@ -102,6 +105,7 @@ export default function ProductDetailPage({ wishlist, setWishlist }) {
         };
 
         navigate('/checkout', { state: { cart: [item] } });
+        trackAddToCart(getProductId(product), product.name, quantity);
     };
 
     if (loading) {

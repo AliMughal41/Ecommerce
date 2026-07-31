@@ -8,6 +8,7 @@ import Footer from '../components/Footer';
 import SubscribeSection from '../components/SubscribeSection';
 import Pagination from '../components/Pagination';
 import { useAlert } from '../context/AlertContext';
+import { trackAddToCart } from '../utils/tracking';
 import { useProducts } from '../context/ProductsContext';
 import API_URL from '../config';
 
@@ -88,6 +89,7 @@ export default function NewArrivalsPage({ wishlist, setWishlist }) {
         localStorage.setItem('thriftora_cart', JSON.stringify(updatedCart));
         window.dispatchEvent(new Event('cart-updated'));
         showAlert({ type: 'success', message: `${product.name} added to Cart!` });
+        trackAddToCart(getProductId(product), product.name, 1);
     };
 
     const categoryNames = ['All', ...new Set(allProducts.map(p => p.category).filter(Boolean))];

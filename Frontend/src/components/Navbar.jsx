@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 import API_URL from '../config';
+import { trackSearch } from '../utils/tracking';
 
 const navLinks = [
     { label: 'HOME', path: '/home' },    { label: 'BAGS', path: '/bags' },
@@ -226,6 +227,7 @@ export default function Navbar() {
             setSearchResults([]);
             return;
         }
+        trackSearch(query.trim());
         setSearchLoading(true);
         try {
             const { data } = await axios.get(`${API_URL}/api/products/search?q=${encodeURIComponent(query.trim())}`);
@@ -384,9 +386,9 @@ export default function Navbar() {
                         <div
                             className="position-relative"
                             style={{ 
-                                width: '44px', 
-                                height: '44px',
-                                minWidth: '44px',
+                                width: '50px', 
+                                height: '50px',
+                                minWidth: '50px',
                                 transition: 'all 0.3s ease'
                             }}
                             onMouseEnter={e => {
@@ -409,33 +411,6 @@ export default function Navbar() {
                                     transition: 'all 0.3s ease'
                                 }}
                             />
-                            {/* Rotating ring effect */}
-                            <div className="position-absolute" style={{
-                                top: '-8px',
-                                left: '-8px',
-                                right: '-8px',
-                                bottom: '-8px',
-                                borderRadius: '50%',
-                                border: '1px solid rgba(212,175,55,0.1)',
-                                animation: 'spin 10s linear infinite',
-                                pointerEvents: 'none'
-                            }}></div>
-                            <div className="position-absolute" style={{
-                                top: '-14px',
-                                left: '-14px',
-                                right: '-14px',
-                                bottom: '-14px',
-                                borderRadius: '50%',
-                                border: '1px solid rgba(212,175,55,0.05)',
-                                animation: 'spin 15s linear infinite reverse',
-                                pointerEvents: 'none'
-                            }}></div>
-                            <style>{`
-                                @keyframes spin {
-                                    0% { transform: rotate(0deg); }
-                                    100% { transform: rotate(360deg); }
-                                }
-                            `}</style>
                         </div>
                         <div className="d-flex flex-column">
                             <span className="fw-bolder" style={{ 

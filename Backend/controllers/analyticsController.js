@@ -3,6 +3,7 @@ const DeliveredOrder = require('../models/DeliveredOrder');
 const Product = require('../models/Product');
 const Customer = require('../models/Customer');
 const AnalyticsEvent = require('../models/Analytics');
+const VisitorSession = require('../models/VisitorSession');
 const Return = require('../models/Return');
 const RevenueReset = require('../models/RevenueReset');
 
@@ -441,20 +442,149 @@ exports.getCustomReport = async (req, res) => {
   }
 };
 
+const getClientIp = (req) => {
+  const fwd = req.headers['x-forwarded-for'];
+  if (fwd) return fwd.split(',')[0].trim();
+  return req.ip || req.socket?.remoteAddress || '';
+};
+
+// ── Server-side geolocation (cached by IP, no CORS issues) ─────────────────
+const geoCacheMap = new Map();
+
+const lookupGeo = async (ip) => {
+  if (!ip || ip === '::1' || ip === '127.0.0.1' || ip.startsWith('::ffff:127')) return { city: '', country: '' };
+  const cached = geoCacheMap.get(ip);
+  if (cached) return cached;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000);
+    const res = await fetch(`https://ipwho.is/${ip}`, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const data = await res.json();
+      const geo = {
+        city: data.city || '',
+        country: data.country || data.country_name || '',
+      };
+      geoCacheMap.set(ip, geo);
+      if (geoCacheMap.size > 5000) geoCacheMap.clear();
+      return geo;
+    }
+  } catch { /* ignore */ }
+  return { city: '', country: '' };
+};
+
 exports.trackEvent = async (req, res) => {
   try {
-    const { eventType, productId, path, query: searchQuery } = req.body;
+    const {
+      eventType, productId, path, query: searchQuery, sessionId,
+      deviceType, browser, os, referrer, source, city, country, screen, metadata,
+    } = req.body;
     const customerId = req.customer?._id || null;
+    const ip = getClientIp(req);
+
+    if (!eventType) return res.status(200).json({ success: true });
+
+    if (sessionId) {
+      const now = new Date();
+      const existing = await VisitorSession.findOne({ sessionId }).select('startTime').lean();
+      let geo = { city: city || '', country: country || '' };
+      if (!existing) {
+        const lookedUp = await lookupGeo(ip);
+        geo = { city: geo.city || lookedUp.city, country: geo.country || lookedUp.country };
+      }
+      const setOnInsert = {
+        sessionId,
+        startTime: now,
+        deviceType: deviceType || '',
+        browser: browser || '',
+        os: os || '',
+        referrer: referrer || '',
+        source: source || '',
+        ip,
+        city: geo.city,
+        country: geo.country,
+        customerId,
+      };
+      const inc = eventType === 'page_view' ? { pageViews: 1 } : {};
+      const push = eventType === 'page_view' && path ? { $push: { pages: { $each: [path], $slice: -10 } } } : {};
+      await VisitorSession.updateOne(
+        { sessionId },
+        { $setOnInsert: setOnInsert, $set: { lastActive: now, ...(geo.city || geo.country ? { city: geo.city, country: geo.country } : {}) }, ...inc, ...push },
+        { upsert: true }
+      );
+    }
 
     await AnalyticsEvent.create({
       eventType,
       productId: productId || undefined,
       customerId,
+      sessionId: sessionId || '',
       path: path || '',
       query: searchQuery || '',
       userAgent: req.headers['user-agent'] || '',
-      ip: req.ip || '',
+      ip,
+      deviceType: deviceType || '',
+      browser: browser || '',
+      os: os || '',
+      referrer: referrer || '',
+      source: source || '',
+      city: city || '',
+      country: country || '',
+      screen: screen || '',
+      metadata: metadata || {},
     });
+    res.status(200).json({ success: true });
+  } catch (error) {
+    res.status(200).json({ success: true });
+  }
+};
+
+exports.trackSessionHeartbeat = async (req, res) => {
+  try {
+    const {
+      sessionId, deviceType, browser, os, referrer, source, city, country,
+    } = req.body;
+    const ip = getClientIp(req);
+
+    if (!sessionId) return res.status(200).json({ success: true });
+
+    const now = new Date();
+    const existing = await VisitorSession.findOne({ sessionId }).lean();
+    if (existing) {
+      await VisitorSession.updateOne({ sessionId }, {
+        $set: { lastActive: now },
+      });
+    } else {
+      const geo = await lookupGeo(ip);
+      await VisitorSession.create({
+        sessionId,
+        startTime: now,
+        lastActive: now,
+        deviceType: deviceType || '',
+        browser: browser || '',
+        os: os || '',
+        referrer: referrer || '',
+        source: source || '',
+        ip,
+        city: geo.city || city || '',
+        country: geo.country || country || '',
+      });
+    }
+    res.status(200).json({ success: true });
+  } catch (error) {
+    res.status(200).json({ success: true });
+  }
+};
+
+exports.trackSessionEnd = async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    if (!sessionId) return res.status(200).json({ success: true });
+    await VisitorSession.updateOne(
+      { sessionId },
+      { $set: { endTime: new Date() } }
+    );
     res.status(200).json({ success: true });
   } catch (error) {
     res.status(200).json({ success: true });

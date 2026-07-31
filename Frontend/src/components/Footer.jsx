@@ -21,8 +21,8 @@ export default function Footer() {
                     <div className="col-lg-3 pe-lg-4">
                         <div className="d-flex align-items-center gap-3 mb-3">
                             <div
-                                className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0 position-relative"
-                                style={{ width: '50px', height: '50px', border: '1px solid #C8A56A', overflow: 'hidden' }}
+                                className="d-flex align-items-center justify-content-center flex-shrink-0 position-relative"
+                                style={{ width: '56px', height: '56px', overflow: 'hidden' }}
                             >
                                 <img src="/images/logo.png" alt="VELNORA" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                             </div>

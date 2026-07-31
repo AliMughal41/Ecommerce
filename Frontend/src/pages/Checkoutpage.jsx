@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, Phone, Mail, MessageCircle, ShieldCheck, Shield, Truck, User, Lock, Tag, CreditCard, CheckCircle, ChevronRight, Minus, Plus, LogIn, UserPlus } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -7,6 +7,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 import API_URL from '../config';
+import { getSessionId, trackCheckoutStart } from '../utils/tracking';
 
 /* ─── ORDER ITEMS (populated from Cart via navigation state) ───────────────────────────────────── */
 const orderItems = [];
@@ -79,6 +80,10 @@ export default function CheckoutPage() {
     const [notes, setNotes] = useState('');
     const [currentStep, setCurrentStep] = useState(1);
     const [createdOrder, setCreatedOrder] = useState(null);
+
+    useEffect(() => {
+        trackCheckoutStart('');
+    }, []);
     const [form, setForm] = useState({
         fullName: customer ? `${customer.firstName} ${customer.lastName}` : '',
         phone: customer?.phone || '',
@@ -144,8 +149,10 @@ export default function CheckoutPage() {
             };
 
             const headers = token ? { Authorization: `Bearer ${token}` } : {};
-            const { data } = await axios.post(`${API_URL}/api/orders`, payload, { headers });
+            const payloadFinal = { ...payload, sessionId: getSessionId() };
+            const { data } = await axios.post(`${API_URL}/api/orders`, payloadFinal, { headers });
             if (data.success) {
+                trackCheckoutStart(data.order?.orderNumber || '');
                 setCreatedOrder(data.order);
                 setCurrentStep(3);
             }

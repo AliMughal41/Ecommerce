@@ -39,7 +39,7 @@ export default function AdminLogin() {
     <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0a', color: '#fff', alignItems: 'center', justifyContent: 'center', fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
       <div style={{ width: '100%', maxWidth: '400px', background: '#0f0c09', border: '1px solid #2a1f10', borderRadius: '8px', padding: '32px' }}>
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '50%', border: '2px solid #c9a84c', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', overflow: 'hidden' }}>
+          <div style={{ width: '52px', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', overflow: 'hidden' }}>
             <img src="/images/logo.png" alt="VELNORA" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
           <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0, letterSpacing: '1px' }}>ADMIN LOGIN</h2>

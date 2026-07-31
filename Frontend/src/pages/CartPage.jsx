@@ -7,6 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import API_URL from '../config';
+import { trackAddToCart, trackRemoveFromCart } from '../utils/tracking';
 
 /* ─── INITIAL CART DATA (start empty; items come from ShopPage) ─────────────────────────────────────────────── */
 const initialCart = [];
@@ -51,6 +52,7 @@ export default function CartPage() {
     }, []);
 
     const updateQty = (id, delta) => {
+        const target = cart.find(item => item.id === id);
         setCart(c => c.map(item => {
             if (item.id !== id) return item;
             const newQty = item.qty + delta;
@@ -58,9 +60,17 @@ export default function CartPage() {
             if (delta > 0 && item.stock && newQty > item.stock) return item;
             return { ...item, qty: newQty };
         }));
+        if (target) {
+            if (delta > 0) trackAddToCart(id, target.name, delta);
+            else trackRemoveFromCart(id, target.name);
+        }
     };
 
-    const removeItem = (id) => setCart(c => c.filter(item => item.id !== id));
+    const removeItem = (id) => {
+        const removed = cart.find(item => item.id === id);
+        setCart(c => c.filter(item => item.id !== id));
+        if (removed) trackRemoveFromCart(id, removed.name);
+    };
     const clearCart = () => {
         setCart([]);
         localStorage.setItem('thriftora_cart', JSON.stringify([]));

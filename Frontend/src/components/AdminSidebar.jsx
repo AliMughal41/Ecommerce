@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Package, Tag, Layers, ShoppingCart, Users,
-  Star, UserCog, LogOut, X, ChevronRight, BarChart3, RotateCcw, PlusCircle, PackageCheck, Bookmark
+  Star, UserCog, LogOut, X, ChevronRight, BarChart3, RotateCcw, PlusCircle, PackageCheck, Bookmark, Activity
 } from 'lucide-react';
 
 const SIDEBAR_WIDTH = 260;
@@ -18,6 +18,7 @@ const sidebarLinks = [
   { icon: RotateCcw, label: 'Returns', path: '/admin-returns' },
   { icon: PackageCheck, label: 'Delivered Orders', path: '/admin-delivered-orders' },
   { icon: Star, label: 'Reviews', path: '/admin-reviews' },
+  { icon: Activity, label: 'Traffic Analytics', path: '/admin-analytics' },
   { icon: BarChart3, label: 'Reports & Analytics', path: '/admin-reports' },
   { icon: UserCog, label: 'Admin Profile', path: '/admin-profile' },
 ];
@@ -132,7 +133,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
           >
             <X size={18} />
           </button>
-          <div style={{ width: '50px', height: '50px', borderRadius: '50%', border: '2px solid #c9a84c', margin: '0 auto 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          <div style={{ width: '56px', height: '56px', margin: '0 auto 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
             <img src="/images/logo.png" alt="VELNORA" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
           <div style={{ fontWeight: 800, fontSize: '16px', letterSpacing: '3px', color: '#fff' }}>VELNORA</div>

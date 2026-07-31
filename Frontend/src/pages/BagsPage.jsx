@@ -9,6 +9,7 @@ import Pagination from '../components/Pagination';
 import { useAlert } from '../context/AlertContext';
 import { useProducts } from '../context/ProductsContext';
 import API_URL from '../config';
+import { trackAddToCart } from '../utils/tracking';
 
 const sortOptions = ['Newest First', 'Price: Low to High', 'Price: High to Low', 'Top Rated'];
 
@@ -91,6 +92,7 @@ export default function BagsPage({ wishlist, setWishlist }) {
     localStorage.setItem('thriftora_cart', JSON.stringify(cart));
     window.dispatchEvent(new Event('cart-updated'));
     showAlert({ type: 'success', message: `${product.name} added to Cart!` });
+    trackAddToCart(getProductId(product), product.name, 1);
   };
 
   const buyNow = (product) => {
@@ -101,6 +103,7 @@ export default function BagsPage({ wishlist, setWishlist }) {
       price: product.salePrice || product.price || 0, img: product.mainImage || product.images?.[0]?.url || '', qty: 1, stock: product.stock,
     };
     navigate('/checkout', { state: { cart: [item] } });
+    trackAddToCart(getProductId(product), product.name, 1);
   };
 
   const subCategoryNames = categories

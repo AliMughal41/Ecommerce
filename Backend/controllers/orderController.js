@@ -4,6 +4,8 @@ const Customer = require('../models/Customer');
 const CustomerNotification = require('../models/CustomerNotification');
 const Notification = require('../models/Notification');
 const DeliveredOrder = require('../models/DeliveredOrder');
+const AnalyticsEvent = require('../models/Analytics');
+const VisitorSession = require('../models/VisitorSession');
 const { sendEmail } = require('../config/resend');
 
 // ─── XSS Protection: Escape HTML entities ────────────────────────────────────
@@ -310,6 +312,40 @@ exports.createOrder = async (req, res) => {
       } catch (notifErr) {
         console.error('Customer notification error:', notifErr.message);
       }
+    }
+
+    // 3. Track purchase events (fire-and-forget)
+    const sessionId = req.body.sessionId || '';
+    try {
+      const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || '';
+      const customerId = req.customer?._id || null;
+      const now = new Date();
+      if (sessionId) {
+        await VisitorSession.updateOne(
+          { sessionId },
+          { $set: { lastActive: now } },
+          { upsert: true }
+        );
+      }
+      await AnalyticsEvent.insertMany(
+        validatedItems.map(item => ({
+          eventType: 'purchase',
+          productId: item.productId,
+          customerId,
+          sessionId,
+          path: '/checkout',
+          ip,
+          metadata: {
+            productName: item.name,
+            quantity: item.quantity,
+            orderId: order._id?.toString(),
+            orderNumber: order.orderNumber,
+            total: order.total,
+          },
+        }))
+      );
+    } catch (trackErr) {
+      console.error('Purchase tracking error:', trackErr.message);
     }
 
     res.status(201).json({ success: true, order });

@@ -8,6 +8,7 @@ import SubscribeSection from '../components/SubscribeSection';
 import { useAlert } from '../context/AlertContext';
 import { useProducts } from '../context/ProductsContext';
 import API_URL from '../config';
+import { trackAddToCart } from '../utils/tracking';
 
 export default function CollectionDetailPage() {
     const { id } = useParams();
@@ -94,6 +95,7 @@ export default function CollectionDetailPage() {
         localStorage.setItem('thriftora_cart', JSON.stringify(updatedCart));
         window.dispatchEvent(new Event('cart-updated'));
         showAlert({ type: 'success', message: `${product.name} added to Cart!` });
+        trackAddToCart(getProductId(product), product.name, 1);
     };
 
     const buyNow = (product) => {
@@ -125,6 +127,7 @@ export default function CollectionDetailPage() {
         localStorage.setItem('thriftora_cart', JSON.stringify(updatedCart));
         window.dispatchEvent(new Event('cart-updated'));
         navigate('/checkout');
+        trackAddToCart(getProductId(product), product.name, 1);
     };
 
     if (loading) {

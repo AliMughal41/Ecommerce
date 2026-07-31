@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import API_URL from '../config';
+import { trackLogin, trackRegister } from '../utils/tracking';
 
 const API = `${API_URL}/api`;
 const CustomerAuthContext = createContext();
@@ -64,6 +65,7 @@ const CustomerAuthProvider = ({ children }) => {
       localStorage.setItem('customerToken', data.token);
       setToken(data.token);
       await fetchProfile(data.token);
+      trackLogin();
       return data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Something went wrong');
@@ -76,6 +78,7 @@ const CustomerAuthProvider = ({ children }) => {
       localStorage.setItem('customerToken', data.token);
       setToken(data.token);
       await fetchProfile(data.token);
+      trackLogin();
       return data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Google authentication failed');
@@ -97,6 +100,7 @@ const CustomerAuthProvider = ({ children }) => {
       localStorage.setItem('customerToken', data.token);
       setToken(data.token);
       await fetchProfile(data.token);
+      trackRegister();
       return data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Something went wrong');

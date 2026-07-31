@@ -32,6 +32,7 @@ import AdminReturns from './pages/admin/AdminReturns.jsx'
 import AdminCreateReturn from './pages/admin/AdminCreateReturn.jsx'
 import AdminDeliveredOrders from './pages/admin/AdminDeliveredOrders.jsx'
 import AdminCollections from './pages/admin/AdminCollections.jsx'
+import AdminAnalytics from './pages/admin/AdminAnalytics.jsx'
 import CollectionDetailPage from './pages/CollectionDetailPage.jsx'
 import NotFoundPage from './pages/NotFoundPage.jsx'
 
@@ -50,6 +51,9 @@ import ChangePassword from './pages/account/ChangePassword'
 import TrackOrder from './pages/TrackOrder'
 
 import FloatingWhatsApp from './components/FloatingWhatsApp'
+import PageViewTracker from './components/PageViewTracker'
+
+import { trackAddToCart } from './utils/tracking'
 
 import { Navigate } from 'react-router-dom'
 import axios from 'axios'
@@ -129,6 +133,7 @@ function App() {
     }
     localStorage.setItem('thriftora_cart', JSON.stringify(existingCart));
     window.dispatchEvent(new Event('cart-updated'));
+    trackAddToCart(cartItem.id, cartItem.name, 1);
   };
 
   return (
@@ -138,6 +143,7 @@ function App() {
     <ProductsProvider>
     <BrowserRouter>
       <ScrollToTop />
+      <PageViewTracker />
       <Routes>
         <Route path="/" element={<ShopPage wishlist={wishlist} setWishlist={setWishlist} />} />
         <Route path="/shop" element={<ShopPage wishlist={wishlist} setWishlist={setWishlist} />} />
@@ -219,6 +225,11 @@ function App() {
         <Route path="/admin-collections" element={
           <ProtectedRoute>
             <AdminCollections />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin-analytics" element={
+          <ProtectedRoute>
+            <AdminAnalytics />
           </ProtectedRoute>
         } />
         <Route path="/collection/:id" element={<CollectionDetailPage />} />
